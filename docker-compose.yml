@@ -1,0 +1,40 @@
+master:
+  image: devopsmesos_master
+  hostname: master
+  ports:
+   - 5050:5050
+  command: ./bin/mesos-master.sh --ip=0.0.0.0 --work_dir=/var/lib/mesos
+node1:
+  build: .
+  links:
+   - master:master
+  volumes:
+   - /sys:/sys
+  command: ./bin/mesos-slave.sh --master=master:5050 --containerizers=docker,mesos --docker=/usr/local/bin/docky --executor_registration_timeout=10mins
+  privileged: true
+  cpu_shares: 256
+  mem_limit: 1G
+node2:
+  build: .
+  links:
+   - master:master
+  volumes:
+   - /sys:/sys
+  command: ./bin/mesos-slave.sh --master=master:5050
+  privileged: true
+  cpu_shares: 256
+  mem_limit: 1G
+openlavamaster:
+  build: .
+  expose:
+   - 6322/udp
+   - 6322/tcp
+   - 6323
+   - 6324
+   - 6325
+  links:
+   - master:master
+  working_dir: /tmp/
+  command: python mesoslava/framework.py
+  cpu_shares: 128
+  mem_limit: 512M

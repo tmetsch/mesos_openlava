@@ -6,7 +6,7 @@ to run this stuff:
 
     $ docker-compose up
 
-This will start a mesos-master, mesos-slaves and the openlava master. It is a "simulated" distributed environment for testing only atm. The idea for integrating openlava on mesos is the following:
+This will start a mesos-master, mesos-slaves and the [openlava](http://openlava.org) master. It is a "simulated" distributed environment for testing only atm. The idea for integrating openlava on mesos is the following:
 
 As long as the queues are empty reject offers from mesos & remove ideling compute nodes in openlava OR if the queues are full accept offers and fire up openlava service as task (in case no lava service is running on that host already).
 

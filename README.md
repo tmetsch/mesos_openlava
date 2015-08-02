@@ -35,7 +35,7 @@ lightweight)
 Do another docker run (make sure the host is set to 'testnode') which links to
 the openlava framework - and run the mesos slave in background:
 
-    $ docker run -h testnode --link mesosopenlava_master_1:master -i -t mesosopenlava_node2 /bin/bash
+    $ docker run -h testnode --link mesosopenlava_master_1:master -i -t mesosopenlava_node1 /bin/bash
     root@testnode:/mesos-0.23.0/build# nohup ./bin/mesos-slave.sh --master=master:5050 &
 
 Within you can now fire up jobs after a while as user *openlava*:

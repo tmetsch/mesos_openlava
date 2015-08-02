@@ -28,10 +28,6 @@ class OpenLavaScheduler(interface.Scheduler):
     def resourceOffers(self, driver, offers):
         # TODO: let's become smarter and grab only what we need in
         # future. - match pending jobs in queues to offers from mesos.
-
-        LOG.info("Received %d offers" % len(offers))
-        sys.stdout.flush()
-
         for offer in offers:
             if util.get_queue_length(OPENLAVA_PATH) > 10 or len(self.slaves)\
                     <= 1:

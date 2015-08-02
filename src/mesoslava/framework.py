@@ -33,7 +33,9 @@ class OpenLavaScheduler(interface.Scheduler):
         sys.stdout.flush()
 
         for offer in offers:
-            if util.get_queue_length(OPENLAVA_PATH) > 10:
+            if util.get_queue_length(OPENLAVA_PATH) > 10 or len(self.slaves)\
+                    <= 1:
+                # one compute node is running.
                 sys.stdout.flush()
                 operation = self._grab_offer(offer)
                 driver.acceptOffers([offer.id], [operation])

@@ -33,6 +33,16 @@ def start_lava(openlava_path):
     return hostname
 
 
+def stop_lava():
+    '''
+    Kill Openlava processes.
+    '''
+    subprocess.check_output(['pkill', 'lim'])
+    subprocess.check_output(['pkill', 'pim'])
+    subprocess.check_output(['pkill', 'res'])
+    subprocess.check_output(['pkill', 'sbatchd'])
+
+
 def get_queue_length(openlava_path, queue='normal'):
     '''
     Get the length pending jobs in a queue.

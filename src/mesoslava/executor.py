@@ -51,8 +51,9 @@ class OpenLavaExecutor(interface.Executor):
                     # lim not ready...
                     pass
 
-                if count >= 10:
+                if count >= 10 and slave_host.strip() != 'testnode':
                     busy = False
+                    util.stop_lava()
                     update = mesos_pb2.TaskStatus()
                     update.task_id.value = task.task_id.value
                     update.state = mesos_pb2.TASK_FINISHED

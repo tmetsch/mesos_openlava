@@ -28,3 +28,22 @@ There are several docker images being used here:
 * based on the previous one an image is defined which incapsulates the
 OpenLava & the OpenLava framework (this could be split into two to be more
 lightweight)
+
+
+## testing
+
+Do another docker run (make sure the host is set to 'testnode') which links to
+the openlava framework - and run the mesos slave in background:
+
+    $ docker run -h testnode --link mesosopenlava_master_1:master -i -t mesosopenlava_node2 /bin/bash
+    root@testnode:/mesos-0.23.0/build# nohup ./bin/mesos-slave.sh --master=master:5050 &
+
+Within you can now fire up jobs after a while as user *openlava*:
+
+    $ su openlava
+    $ bsub /bin/sleep 10
+
+While waiting feel free to scale the node1 with docker-compose & watch the
+openlava cluster grow & shrink:
+
+    $ docker-compose scale node1=10

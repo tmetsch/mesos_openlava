@@ -14,16 +14,6 @@ node1:
   privileged: true
   cpu_shares: 256
   mem_limit: 1G
-node2:
-  build: .
-  links:
-   - master:master
-  volumes:
-   - /sys:/sys
-  command: ./bin/mesos-slave.sh --master=master:5050
-  privileged: true
-  cpu_shares: 256
-  mem_limit: 1G
 openlavamaster:
   build: .
   expose:

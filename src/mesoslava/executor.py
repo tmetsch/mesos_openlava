@@ -2,7 +2,6 @@ __author__ = 'tmetsch'
 
 import sys
 import threading
-import subprocess
 import time
 
 import util
@@ -18,10 +17,6 @@ class OpenLavaExecutor(interface.Executor):
 
     def launchTask(self, driver, task):
         # TODO: containerize openlava service itself...
-        # XXX: this is a hack:
-        # run a job on the master to add host to /etc/hosts & lsf.cluster.openlava
-        # add hostname to lsf.cluster.openlava
-        # start services...
         # and make sure openlava uses docker to execute (#TurtlesAllTheWay).
 
         def run_task():
@@ -32,15 +27,37 @@ class OpenLavaExecutor(interface.Executor):
             util.add_hosts(host, ip)
             util.add_host_to_cluster(host)
 
-            slv_host, slv_ip = util.get_ip()
+            slave_host, slave_ip = util.get_ip()
 
             update = mesos_pb2.TaskStatus()
             update.task_id.value = task.task_id.value
             update.state = mesos_pb2.TASK_RUNNING
-            update.data = slv_host + ':' + slv_ip
+            update.data = slave_host + ':' + slave_ip
             driver.sendStatusUpdate(update)
 
             util.start_lava(OPENLAVA_PATH)
+
+            # in case I'm idle for a while done.
+            busy = True
+            count = 0
+            while busy:
+                time.sleep(10)
+
+                try:
+                    if util.njobs_per_host(OPENLAVA_PATH, slave_host.strip()) \
+                            == 0:
+                        count += 1
+                except:
+                    # lim not ready...
+                    pass
+
+                if count >= 10:
+                    busy = False
+                    update = mesos_pb2.TaskStatus()
+                    update.task_id.value = task.task_id.value
+                    update.state = mesos_pb2.TASK_FINISHED
+                    update.data = slave_host + ':' + slave_ip
+                    driver.sendStatusUpdate(update)
 
         thread = threading.Thread(target=run_task)
         thread.start()

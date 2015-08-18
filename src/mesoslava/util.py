@@ -121,7 +121,6 @@ def rm_hosts(hostname, filename='/etc/hosts'):
     filep = open(filename, 'r')
     cache = []
     for line in filep.readlines():
-        print line.find(hostname)
         if line.find(hostname) > 0:
             pass
         else:

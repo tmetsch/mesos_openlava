@@ -8,7 +8,7 @@ import sys
 import threading
 import time
 
-import mesoslava.util as util
+import util
 
 from mesos import interface
 from mesos import native

@@ -10,7 +10,7 @@ import subprocess
 import sys
 import uuid
 
-import mesoslava.util as util
+import util
 
 from mesos import native
 from mesos import interface
@@ -32,9 +32,6 @@ class OpenLavaScheduler(interface.Scheduler):
         self.master_host = util.start_lava(OPENLAVA_PATH)
         _, self.master_ip = util.get_ip()
 
-        # TODO: remove
-        self.count = 0
-
     def resourceOffers(self, driver, offers):
         """
         Apache Mesos invokes this to inform us about offers. We can accept
@@ -45,7 +42,6 @@ class OpenLavaScheduler(interface.Scheduler):
         for offer in offers:
             if util.get_queue_length(OPENLAVA_PATH) > 10:
                 # one compute node is running.
-                sys.stdout.flush()
                 operation = self._grab_offer(offer)
                 driver.acceptOffers([offer.id], [operation])
             else:
@@ -122,7 +118,6 @@ class OpenLavaScheduler(interface.Scheduler):
               + str(util.get_queue_length(OPENLAVA_PATH)))
         print subprocess.check_output('/opt/openlava-2.2/bin/lsid')
         print subprocess.check_output('/opt/openlava-2.2/bin/bhosts')
-        self.count += 1
         sys.stdout.flush()
 
 if __name__ == '__main__':

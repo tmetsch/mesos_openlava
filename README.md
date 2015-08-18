@@ -1,7 +1,7 @@
 # OpenLava as DCOS service for Apache Mesos
 
-***Note***: very much work in progress! Feel free to help :-) Mostly here
-for me to play & learn Apache Mesos APIs and behaviours.
+***Note***: very much work in progress! Feel free to help :-) I use this
+to learn Apache Mesos' APIs & behaviours.
 
 to run this stuff:
 

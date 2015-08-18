@@ -7,10 +7,10 @@ to run this stuff:
 
     $ docker-compose up
 
-This will start a mesos-master, mesos-slaves and the
-[openlava](http://openlava.org) master. It is a "simulated" distributed
-environment for testing only atm. The idea for integrating openlava on
-Mesos is the following:
+This will start a mesos-master, 1 mesos-slave and the
+[openlava](http://openlava.org) master frameowkr. It is a "simulated"
+distributed environment for testing only atm. The idea for integrating
+openlava on Mesos is the following:
 
 As long as the queues are empty reject offers from mesos OR if a queues has
 pending jobs offers are accepted and the openlava services are started as a

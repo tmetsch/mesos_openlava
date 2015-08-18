@@ -1,3 +1,6 @@
+"""
+Set of very simple test to verify the util routines work.
+"""
 __author__ = 'tmetsch'
 
 import unittest
@@ -6,6 +9,9 @@ from mesoslava import util
 
 
 class UnitTestCase(unittest.TestCase):
+    """
+    Test the util routines.
+    """
 
     def test_add_host_to_cluster_for_sanity(self):
         """

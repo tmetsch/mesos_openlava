@@ -20,14 +20,13 @@ def get_ip():
     return tmp[1], tmp[0]
 
 
-def start_lava(openlava_path):
+def start_lava(openlava_path, is_master=False):
     """
     Fire up the openlava service.
     """
     # TODO: very poor approach for now
     hostname = subprocess.check_output('hostname').rstrip()
 
-    # TODO: configure so that master doesn't take jobs.
     add_host_to_cluster(hostname)
     subprocess.check_output([openlava_path + '/sbin/lim'],
                             env={'LSF_ENVDIR': '/opt/openlava-2.2/etc'})
@@ -35,6 +34,10 @@ def start_lava(openlava_path):
                             env={'LSF_ENVDIR': '/opt/openlava-2.2/etc'})
     subprocess.check_output([openlava_path + '/sbin/sbatchd'],
                             env={'LSF_ENVDIR': '/opt/openlava-2.2/etc'})
+    if is_master:
+        subprocess.check_output([openlava_path + '/bin/badmin', 'hclose',
+                                 hostname],
+                                env={'LSF_ENVDIR': '/opt/openlava-2.2/etc'})
     return hostname
 
 

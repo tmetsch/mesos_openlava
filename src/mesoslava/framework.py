@@ -29,7 +29,7 @@ class OpenLavaScheduler(interface.Scheduler):
         self.executor = executor
         self.slaves = {}
 
-        self.master_host = util.start_lava(OPENLAVA_PATH)
+        self.master_host = util.start_lava(OPENLAVA_PATH, is_master=True)
         _, self.master_ip = util.get_ip()
 
     def resourceOffers(self, driver, offers):
@@ -42,10 +42,10 @@ class OpenLavaScheduler(interface.Scheduler):
         for offer in offers:
             if util.get_queue_length(OPENLAVA_PATH) > 10:
                 # one compute node is running.
+                print dir(offer)
                 operation = self._grab_offer(offer)
                 driver.acceptOffers([offer.id], [operation])
             else:
-                sys.stdout.flush()
                 driver.declineOffer(offer.id)
 
     def _grab_offer(self, offer):

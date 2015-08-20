@@ -14,8 +14,6 @@ from mesos import interface
 from mesos import native
 from mesos.interface import mesos_pb2
 
-OPENLAVA_PATH = '/opt/openlava-2.2'
-
 
 class OpenLavaExecutor(interface.Executor):
     """
@@ -37,8 +35,8 @@ class OpenLavaExecutor(interface.Executor):
             tmp = task.data.split(':')
             host = tmp[0]
             ip_addr = tmp[1]
-            util.add_hosts(host, ip_addr)
-            util.add_host_to_cluster(host)
+            util.add_to_hosts(host, ip_addr)
+            util.add_to_cluster_conf(host)
 
             slave_host, slave_ip = util.get_ip()
 
@@ -48,7 +46,7 @@ class OpenLavaExecutor(interface.Executor):
             update.data = slave_host + ':' + slave_ip
             driver.sendStatusUpdate(update)
 
-            util.start_lava(OPENLAVA_PATH)
+            util.start_lava()
 
             # in case I'm idle for a while done.
             busy = True
@@ -57,8 +55,7 @@ class OpenLavaExecutor(interface.Executor):
                 time.sleep(10)
 
                 try:
-                    if util.njobs_per_host(OPENLAVA_PATH, slave_host.strip()) \
-                            == 0:
+                    if util.njobs_per_host(slave_host.strip()) == 0:
                         count += 1
                 except:
                     # lim not ready...

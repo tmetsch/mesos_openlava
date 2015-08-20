@@ -8,6 +8,9 @@ __author__ = 'tmetsch'
 # python API calls instead of calling subprocess.
 
 import subprocess
+import sys
+
+OPENLAVA_PATH = '/opt/openlava-2.2'
 
 
 def get_ip():
@@ -20,24 +23,24 @@ def get_ip():
     return tmp[1], tmp[0]
 
 
-def start_lava(openlava_path, is_master=False):
+def start_lava(is_master=False):
     """
     Fire up the openlava service.
     """
     # TODO: very poor approach for now
     hostname = subprocess.check_output('hostname').rstrip()
 
-    add_host_to_cluster(hostname)
-    subprocess.check_output([openlava_path + '/sbin/lim'],
-                            env={'LSF_ENVDIR': '/opt/openlava-2.2/etc'})
-    subprocess.check_output([openlava_path + '/sbin/res'],
-                            env={'LSF_ENVDIR': '/opt/openlava-2.2/etc'})
-    subprocess.check_output([openlava_path + '/sbin/sbatchd'],
-                            env={'LSF_ENVDIR': '/opt/openlava-2.2/etc'})
+    add_to_cluster_conf(hostname)
+    subprocess.check_output([OPENLAVA_PATH + '/sbin/lim'],
+                            env={'LSF_ENVDIR': OPENLAVA_PATH + '/etc'})
+    subprocess.check_output([OPENLAVA_PATH + '/sbin/res'],
+                            env={'LSF_ENVDIR': OPENLAVA_PATH + '/etc'})
+    subprocess.check_output([OPENLAVA_PATH + '/sbin/sbatchd'],
+                            env={'LSF_ENVDIR': OPENLAVA_PATH + '/etc'})
     if is_master:
-        subprocess.check_output([openlava_path + '/bin/badmin', 'hclose',
+        subprocess.check_output([OPENLAVA_PATH + '/bin/badmin', 'hclose',
                                  hostname],
-                                env={'LSF_ENVDIR': '/opt/openlava-2.2/etc'})
+                                env={'LSF_ENVDIR': OPENLAVA_PATH + '/etc'})
     return hostname
 
 
@@ -51,28 +54,38 @@ def stop_lava():
     subprocess.check_output(['pkill', 'sbatchd'])
 
 
-def get_queue_length(openlava_path, queue='normal'):
+def get_queue_length(queue='normal'):
     """
     Get the length pending jobs in a queue.
     """
-    tmp = subprocess.check_output([openlava_path + '/bin/bqueues',
+    tmp = subprocess.check_output([OPENLAVA_PATH + '/bin/bqueues',
                                    queue]).split('\n')[1]
     lst = [elem for elem in tmp.split(' ') if len(elem) is not 0]
     return int(lst[8])
 
 
-def njobs_per_host(openlava_path, hostname):
+def njobs_per_host(hostname):
     """
     Return number of jobs for a given host.
     """
-    tmp = subprocess.check_output([openlava_path + '/bin/bhosts',
+    tmp = subprocess.check_output([OPENLAVA_PATH + '/bin/bhosts',
                                    hostname]).split('\n')[1]
     lst = [elem for elem in tmp.split(' ') if len(elem) is not 0]
     return int(lst[4])
 
 
-def add_host_to_cluster(hostname,
-                        filename='/opt/openlava-2.2/etc/lsf.cluster.openlava'):
+def show_openlava_state():
+    """
+    Print some info on OpenLava.
+    """
+    print 'Current queue length: ' + str(get_queue_length())
+    print subprocess.check_output(OPENLAVA_PATH + '/bin/lsid')
+    print subprocess.check_output(OPENLAVA_PATH + '/bin/bhosts')
+    sys.stdout.flush()
+
+
+def add_to_cluster_conf(hostname,
+                        filename=OPENLAVA_PATH + '/etc/lsf.cluster.openlava'):
     """
     Adds a hostname to the lsf.cluster config file.
     """
@@ -88,9 +101,8 @@ def add_host_to_cluster(hostname,
         filep.writelines(cache)
 
 
-def rm_host_from_cluster(hostname,
-                         filename='/opt/openlava-2.2/etc/'
-                                  'lsf.cluster.openlava'):
+def rm_from_cluster_conf(hostname,
+                         filename=OPENLAVA_PATH + '/etc/lsf.cluster.openlava'):
     """
     Removes a hostname to the lsf.cluster config file.
     """
@@ -105,10 +117,23 @@ def rm_host_from_cluster(hostname,
         filep.writelines(cache)
 
 
+def add_host_to_cluster(hostname):
+    """
+    Add a host to the cluster.
+    """
+    subprocess.check_output([OPENLAVA_PATH + '/bin/lsaddhost', hostname])
+
+
+def rm_host_from_cluster(hostname):
+    """
+    Remove a host from the cluster.
+    """
+    subprocess.check_output([OPENLAVA_PATH + '/bin/lsrmhost', hostname])
+
 # TODO: Following should be replaced with DNS stuff imho.
 
 
-def add_hosts(hostname, ip_addr, filename='/etc/hosts'):
+def add_to_hosts(hostname, ip_addr, filename='/etc/hosts'):
     """
     Adds a hostname to /etc/hosts - openlava is very picky about this :-/
     """
@@ -117,7 +142,7 @@ def add_hosts(hostname, ip_addr, filename='/etc/hosts'):
     filep.close()
 
 
-def rm_hosts(hostname, filename='/etc/hosts'):
+def rm_from_hosts(hostname, filename='/etc/hosts'):
     """
     Removes a hostname from /etc/hosts - openlava is very picky about this :-/
     """

@@ -6,7 +6,6 @@ __author__ = 'tmetsch'
 
 import logging
 import os
-import subprocess
 import sys
 import uuid
 
@@ -16,7 +15,6 @@ from mesos import native
 from mesos import interface
 from mesos.interface import mesos_pb2
 
-OPENLAVA_PATH = '/opt/openlava-2.2'
 LOG = logging.getLogger(__name__)
 
 
@@ -29,7 +27,7 @@ class OpenLavaScheduler(interface.Scheduler):
         self.executor = executor
         self.slaves = {}
 
-        self.master_host = util.start_lava(OPENLAVA_PATH, is_master=True)
+        self.master_host = util.start_lava(is_master=True)
         _, self.master_ip = util.get_ip()
 
     def resourceOffers(self, driver, offers):
@@ -40,9 +38,7 @@ class OpenLavaScheduler(interface.Scheduler):
         # TODO: let's become smarter and grab only what we need in
         # future. - match pending jobs in queues to offers from mesos.
         for offer in offers:
-            if util.get_queue_length(OPENLAVA_PATH) > 10:
-                # one compute node is running.
-                print dir(offer)
+            if util.get_queue_length() > 10:
                 operation = self._grab_offer(offer)
                 driver.acceptOffers([offer.id], [operation])
             else:
@@ -99,26 +95,20 @@ class OpenLavaScheduler(interface.Scheduler):
 
         if host not in self.slaves:
             self.slaves[host] = ip_addr
-            util.add_host_to_cluster(host)
-            util.add_hosts(host, ip_addr)
-            subprocess.check_output(['/opt/openlava-2.2/bin/lsaddhost',
-                                     host.strip()])
+            util.add_to_hosts(host, ip_addr)
+            util.add_to_cluster_conf(host)
+            util.add_host_to_cluster(host.strip())
         elif update.state == mesos_pb2.TASK_FINISHED:
+            util.rm_host_from_cluster(host.strip())
+            util.rm_from_cluster_conf(host)
+            util.rm_from_hosts(host)
             self.slaves.pop(host)
-            subprocess.check_output(['/opt/openlava-2.2/bin/lsrmhost',
-                                     host.strip()])
-            util.rm_host_from_cluster(host)
-            util.rm_hosts(host)
         elif update.state == mesos_pb2.TASK_LOST \
                 or update.state == mesos_pb2.TASK_KILLED \
                 or update.state == mesos_pb2.TASK_FAILED:
             driver.abort()
 
-        print('Current queue length: '
-              + str(util.get_queue_length(OPENLAVA_PATH)))
-        print subprocess.check_output('/opt/openlava-2.2/bin/lsid')
-        print subprocess.check_output('/opt/openlava-2.2/bin/bhosts')
-        sys.stdout.flush()
+        util.show_openlava_state()
 
 if __name__ == '__main__':
     LOG.setLevel(level='DEBUG')

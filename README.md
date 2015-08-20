@@ -8,7 +8,7 @@ to run this stuff:
     $ docker-compose up
 
 This will start a mesos-master, 1 mesos-slave and the
-[openlava](http://openlava.org) master frameowkr. It is a "simulated"
+[openlava](http://openlava.org) master framework. It is a "simulated"
 distributed environment for testing only atm. The idea for integrating
 openlava on Mesos is the following:
 

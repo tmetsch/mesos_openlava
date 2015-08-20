@@ -17,12 +17,12 @@ class UnitTestCase(unittest.TestCase):
         """
         test addition an removal of hosts from lsf.cluster config file.
         """
-        util.add_to_cluster_conf('foo', 'lsf.cluster.openlava')
-        util.rm_from_cluster_conf('foo', 'lsf.cluster.openlava')
+        util.add_to_cluster_conf('foo', 'files/lsf.cluster.openlava')
+        util.rm_from_cluster_conf('foo', 'files/lsf.cluster.openlava')
 
     def test_add_hosts_for_sanity(self):
         """
         test the handling of /etc/hosts.
         """
-        util.add_to_hosts('foo', '192.168.0.1', filename='hosts')
-        util.rm_from_hosts('foo', filename='hosts')
+        util.add_to_hosts('foo', '192.168.0.1', filename='files/hosts')
+        util.rm_from_hosts('foo', filename='files/hosts')

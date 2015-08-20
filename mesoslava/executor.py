@@ -8,11 +8,11 @@ import sys
 import threading
 import time
 
-import util
-
 from mesos import interface
 from mesos import native
 from mesos.interface import mesos_pb2
+
+import util
 
 
 class OpenLavaExecutor(interface.Executor):

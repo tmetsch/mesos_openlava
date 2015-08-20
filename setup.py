@@ -4,6 +4,6 @@ from distutils.core import setup
 
 setup(name='mesos_openlava',
       version='0.1',
-      description='OpenLava on Apache Mesos',
+      description='OpenLava as DCOS Service for Apache Mesos',
       packages=['mesoslava']
       )

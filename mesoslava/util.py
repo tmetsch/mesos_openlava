@@ -10,7 +10,7 @@ __author__ = 'tmetsch'
 import subprocess
 import sys
 
-OPENLAVA_PATH = '/opt/openlava-2.2'
+OPENLAVA_PATH = '/opt/openlava-3.0'
 
 
 def get_ip():

@@ -37,11 +37,13 @@ class OpenLavaScheduler(interface.Scheduler):
         """
         # TODO: let's become smarter and grab only what we need in
         # future. - match pending jobs in queues to offers from mesos.
+        # TODO: candidate: https://github.com/Netflix/Fenzo
         for offer in offers:
             if util.get_queue_length() > 10:
                 operation = self._grab_offer(offer)
                 driver.acceptOffers([offer.id], [operation])
             else:
+                # TODO: work with filters
                 driver.declineOffer(offer.id)
 
     def _grab_offer(self, offer):

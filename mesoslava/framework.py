@@ -5,6 +5,7 @@ OpenLava master run as the framework.
 __author__ = 'tmetsch'
 
 import logging
+import json
 import os
 import sys
 import uuid
@@ -64,10 +65,11 @@ class OpenLavaScheduler(interface.Scheduler):
         task = mesos_pb2.TaskInfo()
         task.task_id.value = str(tid)
         task.slave_id.value = offer.slave_id.value
-        task.name = "task %d" % tid
+        task.name = "OpenLava task %d" % tid
         task.executor.MergeFrom(self.executor)
         # this is the master host
-        task.data = self.master_host + ':' + self.master_ip
+        task.data = json.dumps({'master_host': self.master_host,
+                                'master_ip': self.master_ip})
 
         cpus = task.resources.add()
         cpus.name = "cpus"

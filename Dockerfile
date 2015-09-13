@@ -1,6 +1,6 @@
-FROM devopsmesos_master
+FROM tmetsch/mesos_docker
 
-# dependecies
+# dependencies
 RUN apt-get update --fix-missing
 RUN apt-get install -y build-essential wget autoconf libncurses5-dev itcl3-dev tcl-dev
 

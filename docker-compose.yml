@@ -1,9 +1,35 @@
+zookeeper:
+  image: jplock/zookeeper
+  hostname: zookeeper
+  expose:
+   - 2181
+   - 2888 
+   - 3888
+  cpu_shares: 128
+  mem_limit: 512M   
 master:
-  image: devopsmesos_master
+  image: tmetsch/mesos_docker
   hostname: master
   ports:
    - 5050:5050
-  command: ./bin/mesos-master.sh --ip=0.0.0.0 --work_dir=/var/lib/mesos
+  links:
+   - zookeeper:zookeeper
+  command: ./bin/mesos-master.sh --zk=zk://zookeeper:2181/mesos --ip=0.0.0.0 --work_dir=/var/lib/mesos --quorum=1
+  cpu_shares: 128
+  mem_limit: 512M
+marathon:
+  image: tmetsch/mesos_docker
+  hostname: marathon
+  ports:
+   - 8080:8080
+  links:
+   - master:master
+   - zookeeper:zookeeper
+  environment:
+   - MESOS_NATIVE_JAVA_LIBRARY=/mesos-0.23.0/build/src/.libs/libmesos.so
+  command: /marathon-0.9.0/bin/start --master zk://zookeeper:2181/mesos --zk zk://zookeeper:2181/marathon --max_tasks_per_offer 10
+  cpu_shares: 128
+  mem_limit: 512M
 node1:
   build: .
   links:
@@ -12,7 +38,7 @@ node1:
    - /sys:/sys
   command: ./bin/mesos-slave.sh --master=master:5050 --containerizers=docker,mesos --docker=/usr/local/bin/docky --executor_registration_timeout=10mins
   privileged: true
-  cpu_shares: 256
+  cpu_shares: 128
   mem_limit: 1G
 openlavamaster:
   build: .
@@ -28,3 +54,4 @@ openlavamaster:
   command: python mesoslava/framework.py
   cpu_shares: 128
   mem_limit: 512M
+

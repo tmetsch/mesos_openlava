@@ -123,6 +123,7 @@ if __name__ == '__main__':
     EXECUTOR.name = "OpenLava executor"
     EXECUTOR.source = "openlava_test"
 
+    # TODO: UI
     FRAMEWORK = mesos_pb2.FrameworkInfo()
     FRAMEWORK.user = ''
     FRAMEWORK.name = 'OpenLava'
@@ -133,6 +134,7 @@ if __name__ == '__main__':
         logging.getLogger(log).setLevel(logging.DEBUG)
 
     # TODO: authentication
+    # TODO: revocable
     FRAMEWORK.principal = 'openlava-framework'
     DRIVER = native.MesosSchedulerDriver(OpenLavaScheduler(EXECUTOR),
                                          FRAMEWORK,

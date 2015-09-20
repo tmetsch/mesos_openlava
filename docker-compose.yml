@@ -36,8 +36,8 @@ node1:
    - master:master
   volumes:
    - /sys:/sys
-  command: ./bin/mesos-slave.sh --master=master:5050 --containerizers=docker,mesos --docker=/usr/local/bin/docky --executor_registration_timeout=10mins
-  privileged: true
+  command: ./bin/mesos-slave.sh --master=master:5050
+#  privileged: true
   cpu_shares: 128
   mem_limit: 1G
 openlavamaster:

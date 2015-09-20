@@ -15,7 +15,6 @@ RUN make
 RUN make install
 
 RUN cd config; cp lsb.hosts lsb.params lsb.queues lsb.users lsf.cluster.openlava lsf.conf lsf.shared openlava.* /opt/openlava-3.0/etc
-	 
 RUN useradd -r openlava
 
 RUN chown -R openlava:openlava /opt/openlava-3.0

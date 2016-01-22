@@ -5,28 +5,28 @@ RUN apt-get update --fix-missing
 RUN apt-get install -y build-essential wget autoconf libncurses5-dev itcl3-dev tcl-dev
 
 # install openlava
-RUN wget http://www.openlava.org/tarball/openlava-3.0.tar.gz
+RUN wget http://www.openlava.org/tarball/openlava-3.1.tar.gz
 
-RUN tar -xzvf openlava-3.0.tar.gz
-WORKDIR openlava-3.0/
+RUN tar -xzvf openlava-3.1.tar.gz
+WORKDIR openlava-3.1/
 
 RUN ./configure
 RUN make
 RUN make install
 
-RUN cd config; cp lsb.hosts lsb.params lsb.queues lsb.users lsf.cluster.openlava lsf.conf lsf.shared openlava.* /opt/openlava-3.0/etc
+RUN cd config; cp lsb.hosts lsb.params lsb.queues lsb.users lsf.cluster.openlava lsf.conf lsf.shared openlava.* /opt/openlava-3.1/etc
 RUN useradd -r openlava
 
-RUN chown -R openlava:openlava /opt/openlava-3.0
-RUN cp /opt/openlava-3.0/etc/openlava /etc/init.d
-RUN cp /opt/openlava-3.0/etc/openlava.* /etc/profile.d
+RUN chown -R openlava:openlava /opt/openlava-3.1
+RUN cp /opt/openlava-3.1/etc/openlava /etc/init.d
+RUN cp /opt/openlava-3.1/etc/openlava.* /etc/profile.d
 
-ADD etc/lsf.cluster.openlava /opt/openlava-3.0/etc/
+ADD etc/lsf.cluster.openlava /opt/openlava-3.1/etc/
 
-RUN echo "source /opt/openlava-3.0/etc/openlava.sh" >> /root/.bashrc
+RUN echo "source /opt/openlava-3.1/etc/openlava.sh" >> /root/.bashrc
 RUN mkdir -p /home/openlava/
 RUN touch /home/openlava/.bashrc
-RUN echo "source /opt/openlava-3.0/etc/openlava.sh" >> /home/openlava/.bashrc
+RUN echo "source /opt/openlava-3.1/etc/openlava.sh" >> /home/openlava/.bashrc
 
 # Mesos DCOS service part
 ADD mesoslava/ /tmp/mesoslava/

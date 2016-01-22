@@ -32,6 +32,6 @@ RUN echo "source /opt/openlava-3.0/etc/openlava.sh" >> /home/openlava/.bashrc
 ADD mesoslava/ /tmp/mesoslava/
 ADD bin/openlava_node.sh /tmp/
 
-ENV PYTHONPATH=/mesos-0.25.0/build/3rdparty/libprocess/3rdparty/protobuf-2.5.0/python/build/lib.linux-x86_64-2.7:/mesos-0.25.0/build/3rdparty/distribute-0.6.26:/mesos-0.25.0/build/src/python/dist/mesos.native-0.25.0-py2.7-linux-x86_64.egg:/mesos-0.25.0/build/src/python/dist/mesos.interface-0.25.0-py2.7.egg
+ENV PYTHONPATH=/mesos-0.26.0/build/3rdparty/libprocess/3rdparty/protobuf-2.5.0/python/build/lib.linux-x86_64-2.7:/mesos-0.26.0/build/3rdparty/distribute-0.6.26:/mesos-0.26.0/build/src/python/dist/mesos.native-0.26.0-py2.7-linux-x86_64.egg:/mesos-0.26.0/build/src/python/dist/mesos.interface-0.26.0-py2.7.egg
 
-WORKDIR /mesos-0.25.0/build
+WORKDIR /mesos-0.26.0/build

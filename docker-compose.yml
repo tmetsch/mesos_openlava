@@ -26,8 +26,8 @@ marathon:
    - master:master
    - zookeeper:zookeeper
   environment:
-   - MESOS_NATIVE_JAVA_LIBRARY=/mesos-0.25.0/build/src/.libs/libmesos.so
-  command: /marathon-0.11.1/bin/start --master zk://zookeeper:2181/mesos --zk zk://zookeeper:2181/marathon --max_tasks_per_offer 10
+   - MESOS_NATIVE_JAVA_LIBRARY=/mesos-0.26.0/build/src/.libs/libmesos.so
+  command: /marathon-0.14.0/bin/start --master zk://zookeeper:2181/mesos --zk zk://zookeeper:2181/marathon --max_tasks_per_offer 10
   cpu_shares: 128
   mem_limit: 512M
 node1:
@@ -35,9 +35,10 @@ node1:
   links:
    - master:master
   volumes:
-   - /sys:/sys
+   - /sys/fs/cgroup:/sys/fs/cgroup:ro
+   - /run:/run
   command: ./bin/mesos-slave.sh --master=master:5050
-#  privileged: true
+  privileged: true
   cpu_shares: 128
   mem_limit: 1G
 openlavamaster:

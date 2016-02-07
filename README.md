@@ -32,7 +32,7 @@ lightweight)
 
 You can scale the Mesos cluster by running:
 
-    $ docker-compose scale node1=10    
+    $ docker-compose -p tmetsch scale node1=10    
 
 To submit jobs:
 

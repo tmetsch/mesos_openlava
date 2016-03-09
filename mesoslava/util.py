@@ -10,7 +10,7 @@ __author__ = 'tmetsch'
 import subprocess
 import sys
 
-OPENLAVA_PATH = '/opt/openlava-3.0'
+OPENLAVA_PATH = '/opt/openlava-3.1'
 
 
 def get_ip():
@@ -52,6 +52,7 @@ def stop_lava():
     subprocess.check_output(['pkill', 'pim'])
     subprocess.check_output(['pkill', 'res'])
     subprocess.check_output(['pkill', 'sbatchd'])
+    subprocess.check_output(['pkill', '-SIGCHLD', 'mesos-slave'])
 
 
 def get_queue_length(queue='normal'):
@@ -72,6 +73,19 @@ def njobs_per_host(hostname):
                                    hostname]).split('\n')[1]
     lst = [elem for elem in tmp.split(' ') if len(elem) is not 0]
     return int(lst[4])
+
+
+def get_hosts():
+    """
+    Return an array with info about the current hosts in the cluster.
+    """
+    tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/bhosts'])
+    tmp = []
+    for line in tmp_str.split('\n'):
+        if len(line) == 0:
+            continue
+        tmp.append([item for item in line.split(' ') if len(item.strip()) > 0])
+    return tmp
 
 
 def show_openlava_state():

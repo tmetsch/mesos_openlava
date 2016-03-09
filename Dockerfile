@@ -4,6 +4,8 @@ FROM tmetsch/mesos_docker
 RUN apt-get update --fix-missing
 RUN apt-get install -y build-essential wget autoconf libncurses5-dev itcl3-dev tcl-dev
 
+RUN update-ca-certificates -f && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # install openlava
 RUN wget http://www.openlava.org/tarball/openlava-3.1.tar.gz
 
@@ -32,6 +34,6 @@ RUN echo "source /opt/openlava-3.1/etc/openlava.sh" >> /home/openlava/.bashrc
 ADD mesoslava/ /tmp/mesoslava/
 ADD bin/openlava_node.sh /tmp/
 
-ENV PYTHONPATH=/mesos-0.27.0/build/3rdparty/libprocess/3rdparty/protobuf-2.5.0/python/build/lib.linux-x86_64-2.7:/mesos-0.27.0/build/3rdparty/distribute-0.6.27:/mesos-0.27.0/build/src/python/dist/mesos.native-0.27.0-py2.7-linux-x86_64.egg:/mesos-0.27.0/build/src/python/dist/mesos.interface-0.27.0-py2.7.egg
+ENV PYTHONPATH=/mesos-0.27.2/build/3rdparty/libprocess/3rdparty/protobuf-2.5.0/python/build/lib.linux-x86_64-2.7:/mesos-0.27.2/build/3rdparty/distribute-0.6.27:/mesos-0.27.2/build/src/python/dist/mesos.native-0.27.2-py2.7-linux-x86_64.egg:/mesos-0.27.2/build/src/python/dist/mesos.interface-0.27.2-py2.7.egg
 
-WORKDIR /mesos-0.27.0/build
+WORKDIR /mesos-0.27.2/build

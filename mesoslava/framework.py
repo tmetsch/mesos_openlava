@@ -15,6 +15,7 @@ from mesos import interface
 from mesos.interface import mesos_pb2
 
 import util
+import ui.web
 
 LOG = logging.getLogger(__name__)
 
@@ -29,6 +30,7 @@ class OpenLavaScheduler(interface.Scheduler):
         self.slaves = {}
 
         self.master_host = util.start_lava(is_master=True)
+        ui.web.serve()
         _, self.master_ip = util.get_ip()
 
     def resourceOffers(self, driver, offers):
@@ -123,10 +125,10 @@ if __name__ == '__main__':
     EXECUTOR.name = "OpenLava executor"
     EXECUTOR.source = "openlava_test"
 
-    # TODO: UI
     FRAMEWORK = mesos_pb2.FrameworkInfo()
     FRAMEWORK.user = ''
     FRAMEWORK.name = 'OpenLava'
+    FRAMEWORK.webui_url = 'http://%s:9876' % ui.web.get_hostname()
 
     # Setup the loggers
     LOGGERS = (__name__, 'mesos')

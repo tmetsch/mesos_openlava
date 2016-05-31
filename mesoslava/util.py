@@ -10,7 +10,7 @@ __author__ = 'tmetsch'
 import subprocess
 import sys
 
-OPENLAVA_PATH = '/opt/openlava-3.1'
+OPENLAVA_PATH = '/opt/openlava-3.2'
 
 
 def get_ip():
@@ -18,8 +18,9 @@ def get_ip():
     Return the ip address.
     """
     filep = open('/etc/hosts')
-    tmp = filep.readline()
-    tmp = tmp.split('\t')
+    for line in filep.readlines():
+        pass
+    tmp = line.split('\t')
     return tmp[1], tmp[0]
 
 

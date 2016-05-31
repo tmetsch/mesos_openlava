@@ -32,14 +32,14 @@ class OpenLavaExecutor(interface.Executor):
             """
             Run a Apache Mesos Task.
             """
+            slave_host, slave_ip = util.get_ip()
+
             # start openlava services
             tmp = json.loads(task.data)
             host = tmp['master_host']
             ip_addr = tmp['master_ip']
             util.add_to_hosts(host, ip_addr)
             util.add_to_cluster_conf(host)
-
-            slave_host, slave_ip = util.get_ip()
 
             update = mesos_pb2.TaskStatus()
             update.task_id.value = task.task_id.value

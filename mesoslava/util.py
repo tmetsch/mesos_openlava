@@ -17,6 +17,7 @@ def get_ip():
     """
     Return the ip address.
     """
+    # TODO: desperatly needs a better fix; shouldn't return 127.0.0.1
     filep = open('/etc/hosts')
     for line in filep.readlines():
         pass

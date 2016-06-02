@@ -70,6 +70,8 @@ class OpenLavaScheduler(interface.Scheduler):
         task.name = "OpenLava task %d" % tid
         task.executor.MergeFrom(self.executor)
         # this is the master host
+        # TODO: also tell the slave to only expose those shares it should
+        # expose and not more - if necessary update the # of job slots.
         task.data = json.dumps({'master_host': self.master_host,
                                 'master_ip': self.master_ip})
 

@@ -7,21 +7,29 @@ __author__ = 'tmetsch'
 # TODO: this file is one big pain in the a**. Should work with proper
 # python API calls instead of calling subprocess.
 
+import socket
+import fcntl
+import struct
 import subprocess
-import sys
 
 OPENLAVA_PATH = '/opt/openlava-3.2'
 
 
-def get_ip():
+def get_ip(ifname='eth0'):
     """
-    Return the ip address.
+    Return hostname and ip of this node.
+
+    See: http://stackoverflow.com/questions/24196932/ \
+                how-can-i-get-the-ip-address-of-eth0-in-python
     """
-    filep = open('/etc/hosts')
-    for line in filep.readlines():
-        pass
-    tmp = line.split('\t')
-    return tmp[1], tmp[0]
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    ip = socket.inet_ntoa(fcntl.ioctl(
+        s.fileno(),
+        0x8915,  # SIOCGIFADDR
+        struct.pack('256s', ifname[:15])
+    )[20:24])
+    hname = socket.gethostname()
+    return hname, ip
 
 
 def start_lava(is_master=False):
@@ -81,22 +89,15 @@ def get_hosts():
     Return an array with info about the current hosts in the cluster.
     """
     tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/bhosts'])
-    tmp = []
-    for line in tmp_str.split('\n'):
-        if len(line) == 0:
-            continue
-        tmp.append([item for item in line.split(' ') if len(item.strip()) > 0])
-    return tmp
+    return _parse_output(tmp_str)
 
 
-def show_openlava_state():
+def get_queues():
     """
-    Print some info on OpenLava.
+    Return an array with info about the current queues.
     """
-    print 'Current queue length: ' + str(get_queue_length())
-    print subprocess.check_output(OPENLAVA_PATH + '/bin/lsid')
-    print subprocess.check_output(OPENLAVA_PATH + '/bin/bhosts')
-    sys.stdout.flush()
+    tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/bqueues'])
+    return _parse_output(tmp_str)
 
 
 def add_to_cluster_conf(hostname,
@@ -171,3 +172,15 @@ def rm_from_hosts(hostname, filename='/etc/hosts'):
     with open(filename, 'w') as filep:
         filep.writelines(cache)
     filep.close()
+
+
+def _parse_output(tmp_str):
+    """
+    Parses the output from lava commans into lists.
+    """
+    tmp = []
+    for line in tmp_str.split('\n'):
+        if len(line) == 0:
+            continue
+        tmp.append([item for item in line.split(' ') if len(item.strip()) > 0])
+    return tmp

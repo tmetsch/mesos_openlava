@@ -21,11 +21,19 @@ TMPL = '''
             table {
                 margin: 0px auto;
             }
+            h2 {
+                text-align: center;
+                font-size: 1.2em;
+                color: #ff7f00;
+            }
         </style>
     </head>
     <body>
         <img src="http://www.openlava.org/images/openlava_logo_slogan.gif"
             alt="OpenLava logo" />
+        <h2>Queue information</h2>
+        %s
+        <h2>Host information</h2>
         %s
     </body>
 </html>
@@ -60,7 +68,8 @@ def simple_app(environ, start_response):
 
     start_response(status, headers)
 
-    return TMPL % create_table(util.get_hosts())
+    return TMPL % (create_table(util.get_queues()),
+                   create_table(util.get_hosts()))
 
 
 def serve():

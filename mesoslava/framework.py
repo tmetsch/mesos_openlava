@@ -114,7 +114,11 @@ class OpenLavaScheduler(interface.Scheduler):
                 or update.state == mesos_pb2.TASK_FAILED:
             driver.abort()
 
-        util.show_openlava_state()
+        # TODO: use proper logging!
+        print 'Current queue length:', util.get_queue_length()
+        print 'Current number of hosts:', str(len(util.get_hosts()) - 2)
+        sys.stdout.flush()
+
 
 if __name__ == '__main__':
     LOG.setLevel(level='DEBUG')
@@ -137,6 +141,7 @@ if __name__ == '__main__':
 
     # TODO: authentication
     # TODO: revocable
+    # TODO: pick up mesos master URI from env var.
     FRAMEWORK.principal = 'openlava-framework'
     DRIVER = native.MesosSchedulerDriver(OpenLavaScheduler(EXECUTOR),
                                          FRAMEWORK,

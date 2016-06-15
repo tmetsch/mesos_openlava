@@ -27,11 +27,12 @@ class OpenLavaScheduler(interface.Scheduler):
 
     def __init__(self, executor):
         self.executor = executor
-        self.slaves = {}
+        self.agents = {}
+        self.tasks = {}
 
         self.master_host = util.start_lava(is_master=True)
         ui.web.serve()
-        _, self.master_ip = util.get_ip()
+        self.master_ip = util.get_ip(self.master_host)
 
     def resourceOffers(self, driver, offers):
         """
@@ -42,7 +43,10 @@ class OpenLavaScheduler(interface.Scheduler):
         # future. - match pending jobs in queues to offers from mesos.
         # TODO: candidate: https://github.com/Netflix/Fenzo
         for offer in offers:
-            if util.get_queue_length() > 10:
+            # no need to run multiple openlava on one hosts I suspect...
+            # TODO: if necessary update the # of job slots.
+            if util.get_queue_length() > 10 and str(offer.hostname) not in \
+                    self.tasks:
                 operation = self._grab_offer(offer)
                 driver.acceptOffers([offer.id], [operation])
             else:
@@ -55,6 +59,10 @@ class OpenLavaScheduler(interface.Scheduler):
         """
         offer_cpus = 0
         offer_mem = 0
+
+        agent_ip = offer.url.address.ip
+        agent_hostname = offer.hostname
+
         for resource in offer.resources:
             if resource.name == "cpus":
                 offer_cpus += resource.scalar.value
@@ -62,7 +70,6 @@ class OpenLavaScheduler(interface.Scheduler):
                 offer_mem += resource.scalar.value
 
         # XXX: we take the complete offer here for now :-P
-        # TODO: no need to run multiple openlava on one hosts I suspect...
         tid = uuid.uuid4()
         task = mesos_pb2.TaskInfo()
         task.task_id.value = str(tid)
@@ -70,10 +77,10 @@ class OpenLavaScheduler(interface.Scheduler):
         task.name = "OpenLava task %d" % tid
         task.executor.MergeFrom(self.executor)
         # this is the master host
-        # TODO: also tell the slave to only expose those shares it should
-        # expose and not more - if necessary update the # of job slots.
-        task.data = json.dumps({'master_host': self.master_host,
-                                'master_ip': self.master_ip})
+        task.data = json.dumps({'master_hostname': self.master_host,
+                                'master_ip': self.master_ip,
+                                'agent_hostname': str(agent_hostname),
+                                'agent_ip': str(agent_ip)})
 
         cpus = task.resources.add()
         cpus.name = "cpus"
@@ -89,6 +96,8 @@ class OpenLavaScheduler(interface.Scheduler):
         operation.type = mesos_pb2.Offer.Operation.LAUNCH
         operation.launch.task_infos.extend([task])
 
+        self.tasks[agent_hostname] = offer_cpus
+
         return operation
 
     def statusUpdate(self, driver, update):
@@ -101,16 +110,20 @@ class OpenLavaScheduler(interface.Scheduler):
         host = tmp[0]
         ip_addr = tmp[1]
 
-        if host not in self.slaves:
-            self.slaves[host] = ip_addr
+        if host not in self.agents:
+            self.agents[host] = ip_addr
             util.add_to_hosts(host, ip_addr)
             util.add_to_cluster_conf(host)
-            util.add_host_to_cluster(host.strip())
+            # We tell the master to only expose those shares it should
+            # expose and not more - currently JOB_SLOTS = CPU offers.
+            max_jobs = self.tasks[host]
+            util.add_host_to_cluster(host.strip(), max_jobs)
         elif update.state == mesos_pb2.TASK_FINISHED:
             util.rm_host_from_cluster(host.strip())
             util.rm_from_cluster_conf(host)
             util.rm_from_hosts(host)
-            self.slaves.pop(host)
+            self.agents.pop(host)
+            self.tasks.pop(host)
         elif update.state == mesos_pb2.TASK_LOST \
                 or update.state == mesos_pb2.TASK_KILLED \
                 or update.state == mesos_pb2.TASK_FAILED:

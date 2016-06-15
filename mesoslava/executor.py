@@ -32,19 +32,22 @@ class OpenLavaExecutor(interface.Executor):
             """
             Run a Apache Mesos Task.
             """
-            slave_host, slave_ip = util.get_ip()
-
             # start openlava services
             tmp = json.loads(task.data)
-            host = tmp['master_host']
-            ip_addr = tmp['master_ip']
-            util.add_to_hosts(host, ip_addr)
-            util.add_to_cluster_conf(host)
+            master_hostname = tmp['master_hostname']
+            master_ip = tmp['master_ip']
+            agent_hostname = tmp['agent_hostname']
+            agent_ip = tmp['agent_ip']
 
+            # configure the master.
+            util.add_to_hosts(master_hostname, master_ip)
+            util.add_to_cluster_conf(master_hostname)
+
+            # tell master we are ready to fire up.
             update = mesos_pb2.TaskStatus()
             update.task_id.value = task.task_id.value
             update.state = mesos_pb2.TASK_RUNNING
-            update.data = slave_host + ':' + slave_ip
+            update.data = str(agent_hostname) + ':' + str(agent_ip)
             driver.sendStatusUpdate(update)
 
             util.start_lava()
@@ -56,7 +59,7 @@ class OpenLavaExecutor(interface.Executor):
                 time.sleep(10)
 
                 try:
-                    if util.njobs_per_host(slave_host.strip()) == 0:
+                    if util.njobs_per_host(agent_hostname.strip()) == 0:
                         count += 1
                 except:
                     # lim not ready...
@@ -64,10 +67,11 @@ class OpenLavaExecutor(interface.Executor):
 
                 if count >= 12:
                     busy = False
+                    # tell master we are done here.
                     update = mesos_pb2.TaskStatus()
                     update.task_id.value = task.task_id.value
                     update.state = mesos_pb2.TASK_FINISHED
-                    update.data = slave_host + ':' + slave_ip
+                    update.data = str(agent_hostname) + ':' + str(agent_ip)
                     driver.sendStatusUpdate(update)
                     util.stop_lava()
 

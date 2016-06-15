@@ -8,28 +8,17 @@ __author__ = 'tmetsch'
 # python API calls instead of calling subprocess.
 
 import socket
-import fcntl
-import struct
 import subprocess
 
 OPENLAVA_PATH = '/opt/openlava-3.2'
 
 
-def get_ip(ifname='eth0'):
+def get_ip(hostname):
     """
-    Return hostname and ip of this node.
-
-    See: http://stackoverflow.com/questions/24196932/ \
-                how-can-i-get-the-ip-address-of-eth0-in-python
+    Return ip of a given host..
     """
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    ip = socket.inet_ntoa(fcntl.ioctl(
-        s.fileno(),
-        0x8915,  # SIOCGIFADDR
-        struct.pack('256s', ifname[:15])
-    )[20:24])
-    hname = socket.gethostname()
-    return hname, ip
+    hname = socket.gethostbyname(hostname)
+    return hname
 
 
 def start_lava(is_master=False):
@@ -133,11 +122,15 @@ def rm_from_cluster_conf(hostname,
         filep.writelines(cache)
 
 
-def add_host_to_cluster(hostname):
+def add_host_to_cluster(hostname, max_jobs=0):
     """
     Add a host to the cluster.
     """
-    subprocess.check_output([OPENLAVA_PATH + '/bin/lsaddhost', hostname])
+    cmd = [OPENLAVA_PATH + '/bin/lsaddhost']
+    if max_jobs > 0:
+        cmd.extend(['-M', str(max_jobs)])
+    cmd.append(hostname)
+    subprocess.check_output(cmd)
 
 
 def rm_host_from_cluster(hostname):

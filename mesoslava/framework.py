@@ -70,6 +70,7 @@ class OpenLavaScheduler(interface.Scheduler):
                 offer_mem += resource.scalar.value
 
         # XXX: we take the complete offer here for now :-P
+        # TODO: deal with offers with have 0 cpu in it...
         tid = uuid.uuid4()
         task = mesos_pb2.TaskInfo()
         task.task_id.value = str(tid)
@@ -128,6 +129,8 @@ class OpenLavaScheduler(interface.Scheduler):
                 or update.state == mesos_pb2.TASK_KILLED \
                 or update.state == mesos_pb2.TASK_FAILED:
             driver.abort()
+            self.agents.pop(host)
+            self.tasks.pop(host)
 
         # TODO: use proper logging!
         print 'Current queue length:', util.get_queue_length()

@@ -39,8 +39,12 @@ class OpenLavaScheduler(interface.Scheduler):
         Apache Mesos invokes this to inform us about offers. We can accept
         or decline...
         """
-        # TODO: let's become smarter and grab only what we need in
-        # future. - match pending jobs in queues to offers from mesos.
+        # TODO: look into assigning offered hosts to certain queues and \
+        #       trigger badmin reconfig to assure fairness - fitting of \
+        #       offers to needs. Also look into slot limit per queues to \
+        #       enable fairness (see lsb.queues) and trigger reconfig.
+        # TODO: let's become smarter and grab only what we need in \
+        #       future. - match pending jobs in queues to offers from mesos.
         # TODO: candidate: https://github.com/Netflix/Fenzo
         for offer in offers:
             # no need to run multiple openlava on one hosts I suspect...

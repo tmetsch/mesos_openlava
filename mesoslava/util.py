@@ -73,11 +73,27 @@ def njobs_per_host(hostname):
     return int(lst[4])
 
 
+def get_clusters():
+    """
+    Return an array with info about the accessible clusters.
+    """
+    tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/lsclusters'])
+    return _parse_output(tmp_str)
+
+
 def get_hosts():
     """
     Return an array with info about the current hosts in the cluster.
     """
     tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/bhosts'])
+    return _parse_output(tmp_str)
+
+
+def get_hosts_load():
+    """
+    Return an array with load info about the current hosts in the cluster.
+    """
+    tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/lsload'])
     return _parse_output(tmp_str)
 
 

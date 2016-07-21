@@ -15,7 +15,7 @@ QUEUE_NAME    = priority
 PRIORITY      = 43
 NICE          = 10
 QJOB_LIMIT    = 10
-DESCRIPTION   =  Jobs submitted for this queue are scheduled as urgent \
+DESCRIPTION   = Jobs submitted for this queue are scheduled as urgent \
 jobs.
 End Queue
 

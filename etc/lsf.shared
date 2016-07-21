@@ -1,0 +1,29 @@
+
+Begin Cluster
+ClusterName
+openlava
+End Cluster
+
+Begin HostType
+TYPENAME                        # Keyword
+linux
+End HostType
+
+#
+# The CPU factor values are derived from SPECfp95 given by hardware vendors
+# or SpecBench (unless indicated otherwise)
+# See http://www.specbench.org for more information on CPU benchmarking
+# To find out an architecture string for a new model, run 'lim -t'
+#
+Begin HostModel
+MODELNAME  CPUFACTOR   ARCHITECTURE # keyword
+# CPU factors are only comparisons.
+IntelI5      100        (x86_64)
+End HostModel
+
+Begin Resource
+RESOURCENAME  TYPE    INTERVAL INCREASING  DESCRIPTION 	      # Keywords
+   fs         Boolean ()       ()          (File server)
+   cs         Boolean ()       ()          (Compute server)
+   exl_prio   Boolean ()       ()          (Tag as exclusive for prio queue)
+End Resource

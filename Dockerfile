@@ -23,7 +23,7 @@ RUN chown -R openlava:openlava /opt/openlava-3.3
 RUN cp /opt/openlava-3.3/etc/openlava /etc/init.d
 RUN cp /opt/openlava-3.3/etc/openlava.* /etc/profile.d
 
-ADD etc/lsf.cluster.openlava /opt/openlava-3.3/etc/
+ADD etc/lsf.* /opt/openlava-3.3/etc/
 ADD etc/lsb.* /opt/openlava-3.3/etc/
 
 RUN echo "source /opt/openlava-3.3/etc/openlava.sh" >> /root/.bashrc

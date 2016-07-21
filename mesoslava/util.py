@@ -138,13 +138,15 @@ def rm_from_cluster_conf(hostname,
         filep.writelines(cache)
 
 
-def add_host_to_cluster(hostname, max_jobs=0):
+def add_host_to_cluster(hostname, max_jobs=0, resources=None):
     """
     Add a host to the cluster.
     """
     cmd = [OPENLAVA_PATH + '/bin/lsaddhost']
     if max_jobs > 0:
         cmd.extend(['-M', str(max_jobs)])
+    if resources is not None:
+        cmd.extend(['-R', resources])
     cmd.append(hostname)
     subprocess.check_output(cmd)
 

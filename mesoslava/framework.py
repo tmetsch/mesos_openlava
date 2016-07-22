@@ -27,8 +27,8 @@ class OpenLavaScheduler(interface.Scheduler):
 
     def __init__(self, executor):
         self.executor = executor
-        self.agents = {}
-        self.tasks = {}
+        self.accepted_tasks = {}
+        self.running_tasks = {}
 
         self.master_host = util.start_lava(is_master=True)
         ui.web.serve()
@@ -39,25 +39,30 @@ class OpenLavaScheduler(interface.Scheduler):
         Apache Mesos invokes this to inform us about offers. We can accept
         or decline...
         """
-        # TODO: look into assigning offered hosts to certain queues and \
-        #       trigger badmin reconfig to assure fairness - fitting of \
-        #       offers to needs. Also look into slot limit per queues to \
-        #       enable fairness (see lsb.queues) and trigger reconfig.
         # TODO: let's become smarter and grab only what we need in \
         #       future. - match pending jobs in queues to offers from mesos.
         # TODO: candidate: https://github.com/Netflix/Fenzo
         for offer in offers:
-            # no need to run multiple openlava on one hosts I suspect...
-            # TODO: if necessary update the # of job slots.
-            if util.get_queue_length() > 10 and str(offer.hostname) not in \
-                    self.tasks:
-                operation = self._grab_offer(offer)
-                driver.acceptOffers([offer.id], [operation])
-            else:
+            # not going to run openlava twice on same hosts.
+            if str(offer.hostname) in self.accepted_tasks:
+                # TODO: could tune number of job slots available on that host.
                 # TODO: work with filters
                 driver.declineOffer(offer.id)
 
-    def _grab_offer(self, offer):
+            # if prio queue > 10 exclusively assign offers to prio queue.
+            if util.get_queue_length(queue='priority') > 10:
+                operation = self._grab_offer(offer, 'exl_prio')
+                driver.acceptOffers([offer.id], [operation])
+                continue
+            if util.get_queue_length(queue='normal') > 10:
+                operation = self._grab_offer(offer, None)
+                driver.acceptOffers([offer.id], [operation])
+                continue
+
+            # otherwise let's decline.
+            driver.declineOffer(offer.id)
+
+    def _grab_offer(self, offer, resource_tag):
         """
         Grabs the offer from mesos and fires tasks.
         """
@@ -101,7 +106,7 @@ class OpenLavaScheduler(interface.Scheduler):
         operation.type = mesos_pb2.Offer.Operation.LAUNCH
         operation.launch.task_infos.extend([task])
 
-        self.tasks[agent_hostname] = offer_cpus
+        self.accepted_tasks[agent_hostname] = (offer_cpus, resource_tag)
 
         return operation
 
@@ -115,29 +120,34 @@ class OpenLavaScheduler(interface.Scheduler):
         host = tmp[0]
         ip_addr = tmp[1]
 
-        if host not in self.agents:
-            self.agents[host] = ip_addr
+        if host not in self.running_tasks:
             util.add_to_hosts(host, ip_addr)
             util.add_to_cluster_conf(host)
             # We tell the master to only expose those shares it should
             # expose and not more - currently JOB_SLOTS = CPU offers.
-            max_jobs = self.tasks[host]
-            util.add_host_to_cluster(host.strip(), max_jobs)
+            tmp = self.accepted_tasks[host]
+            max_jobs = tmp[0]
+            resource_tag = tmp[1]
+            util.add_host_to_cluster(host.strip(), max_jobs, resource_tag)
+            self.running_tasks[host] = ip_addr
         elif update.state == mesos_pb2.TASK_FINISHED:
             util.rm_host_from_cluster(host.strip())
             util.rm_from_cluster_conf(host)
             util.rm_from_hosts(host)
-            self.agents.pop(host)
-            self.tasks.pop(host)
+            self.accepted_tasks.pop(host)
+            self.running_tasks.pop(host)
         elif update.state == mesos_pb2.TASK_LOST \
                 or update.state == mesos_pb2.TASK_KILLED \
                 or update.state == mesos_pb2.TASK_FAILED:
             driver.abort()
-            self.agents.pop(host)
-            self.tasks.pop(host)
+            self.accepted_tasks.pop(host)
+            self.running_tasks.pop(host)
 
         # TODO: use proper logging!
-        print 'Current queue length:', util.get_queue_length()
+        print 'Current queue length (normal):', \
+            util.get_queue_length('normal')
+        print 'Current queue length (priority):', \
+            util.get_queue_length('priority')
         print 'Current number of hosts:', str(len(util.get_hosts()) - 2)
         sys.stdout.flush()
 

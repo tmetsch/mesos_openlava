@@ -25,8 +25,6 @@ marathon:
   links:
    - master:master
    - zookeeper:zookeeper
-  environment:
-   - MESOS_NATIVE_JAVA_LIBRARY=/mesos-0.28.2/build/src/.libs/libmesos.so
   command: /marathon-1.1.1/bin/start --master zk://zookeeper:2181/mesos --zk zk://zookeeper:2181/marathon --max_tasks_per_offer 10
   cpu_shares: 128
   mem_limit: 512M
@@ -37,7 +35,7 @@ node1:
   volumes:
    - /sys/fs/cgroup:/sys/fs/cgroup:ro
    - /run:/run
-  command: ./bin/mesos-slave.sh --no-systemd_enable_support --master=master:5050
+  command: ./bin/mesos-slave.sh --no-systemd_enable_support --work_dir=/var/lib/mesos --master=master:5050
   privileged: true
   cpu_shares: 128
   mem_limit: 1G
@@ -49,7 +47,7 @@ node1:
 #    - /sys/fs/cgroup:/sys/fs/cgroup
 #    - /usr/bin/docker:/usr/bin/docker
 #    - /var/run/docker.sock:/var/run/docker.sock
-#  command: ./bin/mesos-slave.sh --master=master:5050 --containerizers=docker --attributes=docker:true --resources=ports(*):[20000-32000] --executor_registration_timeout=10mins
+#  command: ./bin/mesos-slave.sh --master=master:5050 --containerizers=docker --attributes=docker:true --resources=ports(*):[20000-32000] --executor_registration_timeout=10mins --no-systemd_enable_support --launcher=posix
 #  privileged: true
 #  cpu_shares: 256
 #  mem_limit: 1G

@@ -7,6 +7,7 @@ RUN apt-get install --no-install-recommends -y build-essential wget autoconf lib
 RUN update-ca-certificates -f && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # install openlava
+WORKDIR /tmp
 RUN wget http://www.openlava.org/tarball/openlava-3.3.tar.gz
 
 RUN tar -xzvf openlava-3.3.tar.gz
@@ -35,6 +36,4 @@ RUN echo "source /opt/openlava-3.3/etc/openlava.sh" >> /home/openlava/.bashrc
 ADD mesoslava/ /tmp/mesoslava/
 ADD bin/openlava_node.sh /tmp/
 
-ENV PYTHONPATH=/mesos-0.28.2/build/3rdparty/libprocess/3rdparty/protobuf-2.5.0/python/build/lib.linux-x86_64-2.7:/mesos-0.28.2/build/3rdparty/distribute-0.6.27:/mesos-0.28.2/build/src/python/dist/mesos.native-0.28.2-py2.7-linux-x86_64.egg:/mesos-0.28.2/build/src/python/dist/mesos.interface-0.28.2-py2.7.egg
-
-WORKDIR /mesos-0.28.2/build
+ENV PYTHONPATH=/usr/local/lib/python2.7/site-packages

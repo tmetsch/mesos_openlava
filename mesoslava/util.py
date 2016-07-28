@@ -73,19 +73,27 @@ def njobs_per_host(hostname):
     return int(lst[4])
 
 
+def get_bhosts():
+    """
+    Return an array with info about the current hosts in the cluster.
+    """
+    tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/bhosts'])
+    return _parse_output(tmp_str)
+
+
+def get_bqueues():
+    """
+    Return an array with info about the current queues.
+    """
+    tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/bqueues'])
+    return _parse_output(tmp_str)
+
+
 def get_clusters():
     """
     Return an array with info about the accessible clusters.
     """
     tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/lsclusters'])
-    return _parse_output(tmp_str)
-
-
-def get_hosts():
-    """
-    Return an array with info about the current hosts in the cluster.
-    """
-    tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/bhosts'])
     return _parse_output(tmp_str)
 
 
@@ -97,11 +105,11 @@ def get_hosts_load():
     return _parse_output(tmp_str)
 
 
-def get_queues():
+def get_hosts():
     """
-    Return an array with info about the current queues.
+    Return an array with load info about the current hosts in the cluster.
     """
-    tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/bqueues'])
+    tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/lshosts'])
     return _parse_output(tmp_str)
 
 
@@ -138,7 +146,7 @@ def rm_from_cluster_conf(hostname,
         filep.writelines(cache)
 
 
-def add_host_to_cluster(hostname, max_jobs=0, resources=None):
+def add_host_to_cluster(hostname, max_jobs=0, resources=None, model=None):
     """
     Add a host to the cluster.
     """
@@ -147,6 +155,8 @@ def add_host_to_cluster(hostname, max_jobs=0, resources=None):
         cmd.extend(['-M', str(max_jobs)])
     if resources is not None:
         cmd.extend(['-R', resources])
+    if model is not None:
+        cmd.extend(['-m', model])
     cmd.append(hostname)
     subprocess.check_output(cmd)
 

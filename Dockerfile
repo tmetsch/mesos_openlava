@@ -37,3 +37,5 @@ ADD mesoslava/ /tmp/mesoslava/
 ADD bin/openlava_node.sh /tmp/
 
 ENV PYTHONPATH=/usr/local/lib/python2.7/site-packages
+
+WORKDIR /mesos-1.0.0/build

@@ -20,6 +20,10 @@ TMPL = '''
             }
             table {
             }
+            h1 {
+                font-size: 1.4em;
+                color: #444;
+            }
             h2 {
                 font-size: 1.2em;
                 color: #ff7f00;
@@ -29,13 +33,17 @@ TMPL = '''
     <body>
         <img src="http://www.openlava.org/images/openlava_logo_slogan.gif"
             alt="OpenLava logo" />
-        <h2>Cluster information</h2>
-        %s
+        <h1>OpenLava batch information</h1>
         <h2>Queue information</h2>
         %s
         <h2>Host information</h2>
         %s
+        <h1>OpenLava base information</h1>
+        <h2>Cluster information</h2>
+        %s
         <h2>Load information</h2>
+        %s
+        <h2>Host information</h2>
         %s
     </body>
 </html>
@@ -70,10 +78,11 @@ def simple_app(environ, start_response):
 
     start_response(status, headers)
 
-    return TMPL % (create_table(util.get_clusters()),
-                   create_table(util.get_queues()),
-                   create_table(util.get_hosts()),
-                   create_table(util.get_hosts_load()))
+    return TMPL % (create_table(util.get_bqueues()),
+                   create_table(util.get_bhosts()),
+                   create_table(util.get_clusters()),
+                   create_table(util.get_hosts_load()),
+                   create_table(util.get_hosts()))
 
 
 def serve():

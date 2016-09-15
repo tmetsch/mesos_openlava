@@ -2,7 +2,7 @@ FROM tmetsch/mesos_docker
 
 # dependencies
 RUN apt-get update --fix-missing
-RUN apt-get install --no-install-recommends -y build-essential wget autoconf libncurses5-dev itcl3-dev tcl-dev
+RUN apt-get install --no-install-recommends -y build-essential wget autoconf libncurses5-dev itcl3-dev tcl-dev python2.7
 
 RUN update-ca-certificates -f && apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -38,4 +38,4 @@ ADD bin/openlava_node.sh /tmp/
 
 ENV PYTHONPATH=/usr/local/lib/python2.7/site-packages
 
-WORKDIR /mesos-1.0.0/build
+WORKDIR /

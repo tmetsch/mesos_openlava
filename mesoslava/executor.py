@@ -2,8 +2,6 @@
 OpenLava executor for Apache Mesos. Fires up a LIM, PIM, SBATCHD, RES.
 """
 
-__author__ = 'tmetsch'
-
 import sys
 import json
 import threading
@@ -14,6 +12,8 @@ from mesos import native
 from mesos.interface import mesos_pb2
 
 import util
+
+__author__ = 'tmetsch'
 
 
 class OpenLavaExecutor(interface.Executor):

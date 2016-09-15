@@ -4,4 +4,4 @@
 # from mesos 1.0 on it doesn'T seem like env vars get copied to the executor.
 export PYTHONPATH=/usr/local/lib/python2.7/site-packages
 
-python /tmp/mesoslava/executor.py
+python2.7 /tmp/mesoslava/executor.py

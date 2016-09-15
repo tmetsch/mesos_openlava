@@ -2,8 +2,6 @@
 OpenLava master run as the framework.
 """
 
-__author__ = 'tmetsch'
-
 import logging
 import json
 import os
@@ -16,6 +14,8 @@ from mesos.interface import mesos_pb2
 
 import util
 import ui.web
+
+__author__ = 'tmetsch'
 
 LOG = logging.getLogger(__name__)
 
@@ -144,11 +144,13 @@ class OpenLavaScheduler(interface.Scheduler):
             self.running_tasks.pop(host)
 
         # TODO: use proper logging!
-        print 'Current queue length (normal):', \
-            util.get_queue_length('normal')
-        print 'Current queue length (priority):', \
-            util.get_queue_length('priority')
-        print 'Current number of hosts:', str(len(util.get_hosts()) - 2)
+        print('Current queue length (normal): {0}'.
+              format(util.get_queue_length('normal')))
+        print('Current queue length (priority): {0}'.
+              format(util.get_queue_length('priority')))
+        print('Current number of hosts: {0}'.
+              format(str(len(util.get_hosts()) - 2)))
+
         sys.stdout.flush()
 
 

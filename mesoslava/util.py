@@ -2,13 +2,13 @@
 Set of helpers routines called by both the framework and executor.
 """
 
+import socket
+import subprocess
+
 __author__ = 'tmetsch'
 
 # TODO: this file is one big pain in the a**. Should work with proper
 # python API calls instead of calling subprocess.
-
-import socket
-import subprocess
 
 OPENLAVA_PATH = '/opt/openlava-3.3'
 

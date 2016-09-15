@@ -14,7 +14,12 @@ master:
    - 5050:5050
   links:
    - zookeeper:zookeeper
-  command: ./bin/mesos-master.sh --zk=zk://zookeeper:2181/mesos --ip=0.0.0.0 --work_dir=/var/lib/mesos --quorum=1
+  environment:
+   - MESOS_ZK=zk://zookeeper:2181/mesos
+   - MESOS_IP=0.0.0.0
+   - MESOS_WORK_DIR=/var/lib/mesos
+   - MESOS_QUORUM=1
+  command: /usr/local/sbin/mesos-master
   cpu_shares: 128
   mem_limit: 512M
 marathon:
@@ -25,7 +30,12 @@ marathon:
   links:
    - master:master
    - zookeeper:zookeeper
-  command: /marathon-1.1.1/bin/start --master zk://zookeeper:2181/mesos --zk zk://zookeeper:2181/marathon --max_tasks_per_offer 10
+  environment:
+   - MARATHON_MASTER=zk://zookeeper:2181/mesos
+   - MARATHON_ZK=zk://zookeeper:2181/marathon
+   - MARATHON_MAX_TASKS_PER_OFFER=10
+   - MARATHON_DISABLE_HA
+  command: /opt/marathon/bin/start
   cpu_shares: 128
   mem_limit: 512M
 node1:
@@ -35,7 +45,11 @@ node1:
   volumes:
    - /sys/fs/cgroup:/sys/fs/cgroup:ro
    - /run:/run
-  command: ./bin/mesos-slave.sh --no-systemd_enable_support --work_dir=/var/lib/mesos --master=master:5050
+  environment:
+   - MESOS_MASTER=master:5050
+   - MESOS_WORK_DIR=/tmp/mesos
+   - MESOS_NO-SYSTEMD_ENABLE_SUPPORT
+  command: /usr/local/sbin/mesos-slave
   privileged: true
   cpu_shares: 128
   mem_limit: 1G
@@ -44,10 +58,18 @@ node1:
 #  links:
 #   - master:master
 #  volumes:
-#    - /sys/fs/cgroup:/sys/fs/cgroup
-#    - /usr/bin/docker:/usr/bin/docker
-#    - /var/run/docker.sock:/var/run/docker.sock
-#  command: ./bin/mesos-slave.sh --master=master:5050 --containerizers=docker --attributes=docker:true --resources=ports(*):[20000-32000] --executor_registration_timeout=10mins --no-systemd_enable_support --launcher=posix
+#   - /sys/fs/cgroup:/sys/fs/cgroup
+#   - /usr/bin/docker:/usr/bin/docker
+#   - /var/run/docker.sock:/var/run/docker.sock
+#  environment:
+#   - MESOS_MASTER=master:5050
+#   - MESOS_CONTAINERIZERS=docker
+#   - MESOS_ATTRIBUTES=docker:true
+#   - MESOS_RESOURCES=ports(*):[20000-32000]
+#   - MESOS_EXECUTOR_REGISTRATION_TIMEOUT=10mins
+#   - MESOS_WORK_DIR=/tmp/mesos
+#   - MESOS_NO-SYSTEMD_ENABLE_SUPPORT
+#  command: /usr/local/sbin/mesos-slave
 #  privileged: true
 #  cpu_shares: 256
 #  mem_limit: 1G
@@ -64,7 +86,7 @@ openlavamaster:
   links:
    - master:master
   working_dir: /tmp/
-  command: python mesoslava/framework.py
+  command: python2.7 mesoslava/framework.py
   cpu_shares: 128
   mem_limit: 512M
 

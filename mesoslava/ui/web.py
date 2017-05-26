@@ -39,8 +39,10 @@ TMPL = '''
         <h2>Host information</h2>
         %s
         <h1>OpenLava base information</h1>
+        <!-- 
+        XXX: openlava 2.2 does not support this.
         <h2>Cluster information</h2>
-        %s
+        -->
         <h2>Load information</h2>
         %s
         <h2>Host information</h2>
@@ -80,7 +82,8 @@ def simple_app(environ, start_response):
 
     return TMPL % (create_table(util.get_bqueues()),
                    create_table(util.get_bhosts()),
-                   create_table(util.get_clusters()),
+                   # XXX: openlava 2.2. does not support this command.
+                   # create_table(util.get_clusters()),
                    create_table(util.get_hosts_load()),
                    create_table(util.get_hosts()))
 

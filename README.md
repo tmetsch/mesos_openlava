@@ -32,19 +32,19 @@ lightweight)
 
 You can scale the Mesos cluster by running:
 
-    $ docker-compose -p tmetsch scale node1=10    
+    $ docker-compose -p tmetsch scale node=10    
 
 To submit jobs:
 
-    $ docker exec -u openlava tmetsch_openlavamaster_1 /opt/openlava-3.3/bin/bsub -J "myArray[1-100]" /bin/sleep 3
+    $ docker exec -u openlava tmetsch_openlavamaster_1 /opt/openlava-2.2/bin/bsub -J "myArray[1-100]" /bin/sleep 3
 
 To list jobs:
 
-    $ docker exec -u openlava tmetsch_openlavamaster_1 /opt/openlava-3.3/bin/bjobs
+    $ docker exec -u openlava tmetsch_openlavamaster_1 /opt/openlava-2.2/bin/bjobs
 
 To watch the current hosts (Mesos Tasks) in the OpenLava cluster:
 
-    $ watch docker exec -u openlava tmetsch_openlavamaster_1 /opt/openlava-3.3/bin/bhosts
+    $ watch docker exec -u openlava tmetsch_openlavamaster_1 /opt/openlava-2.2/bin/bhosts
 
 In the meantime feel free to see the openlava cluster shrink and grow based on 
 demand :-)

@@ -38,41 +38,22 @@ marathon:
   command: /opt/marathon/bin/start
   cpu_shares: 128
   mem_limit: 512M
-node1:
+node:
   build: .
   links:
    - master:master
   volumes:
    - /sys/fs/cgroup:/sys/fs/cgroup:ro
-   - /run:/run
+   - /usr/bin/docker:/usr/bin/docker
+   - /var/run/docker.sock:/var/run/docker.sock
   environment:
    - MESOS_MASTER=master:5050
    - MESOS_WORK_DIR=/tmp/mesos
-   - MESOS_NO-SYSTEMD_ENABLE_SUPPORT
+   - MESOS_SYSTEMD_ENABLE_SUPPORT=false
   command: /usr/local/sbin/mesos-slave
   privileged: true
   cpu_shares: 128
   mem_limit: 1G
-#nodedocky:
-#  image: tmetsch/mesos_docker
-#  links:
-#   - master:master
-#  volumes:
-#   - /sys/fs/cgroup:/sys/fs/cgroup
-#   - /usr/bin/docker:/usr/bin/docker
-#   - /var/run/docker.sock:/var/run/docker.sock
-#  environment:
-#   - MESOS_MASTER=master:5050
-#   - MESOS_CONTAINERIZERS=docker
-#   - MESOS_ATTRIBUTES=docker:true
-#   - MESOS_RESOURCES=ports(*):[20000-32000]
-#   - MESOS_EXECUTOR_REGISTRATION_TIMEOUT=10mins
-#   - MESOS_WORK_DIR=/tmp/mesos
-#   - MESOS_NO-SYSTEMD_ENABLE_SUPPORT
-#  command: /usr/local/sbin/mesos-slave
-#  privileged: true
-#  cpu_shares: 256
-#  mem_limit: 1G
 openlavamaster:
   build: .
   expose:
@@ -89,4 +70,3 @@ openlavamaster:
   command: python2.7 mesoslava/framework.py
   cpu_shares: 128
   mem_limit: 512M
-

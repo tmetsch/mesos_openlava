@@ -8,29 +8,33 @@ RUN update-ca-certificates -f && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # install openlava
 WORKDIR /tmp
-RUN wget http://www.openlava.org/tarball/openlava-3.3.tar.gz
+RUN wget http://www.openlava.org/tarball/openlava-2.2.tar.gz
+# ADD openlava-3.3.tar.gz /tmp/
 
-RUN tar -xzvf openlava-3.3.tar.gz
-WORKDIR openlava-3.3/
+RUN tar -xzvf openlava-2.2.tar.gz
+WORKDIR openlava-2.2/
 
 RUN ./configure
 RUN make
 RUN make install
 
-RUN cd config; cp lsb.hosts lsb.params lsb.queues lsb.users lsf.cluster.openlava lsf.conf lsf.shared openlava.* /opt/openlava-3.3/etc
+RUN cd config; cp lsb.hosts lsb.params lsb.queues lsb.users lsf.cluster.openlava lsf.conf lsf.shared openlava.* /opt/openlava-2.2/etc
 RUN useradd -r openlava
+RUN usermod -aG docker openlava
 
-RUN chown -R openlava:openlava /opt/openlava-3.3
-RUN cp /opt/openlava-3.3/etc/openlava /etc/init.d
-RUN cp /opt/openlava-3.3/etc/openlava.* /etc/profile.d
+RUN chown -R openlava:openlava /opt/openlava-2.2
+RUN cp /opt/openlava-2.2/etc/openlava /etc/init.d
+RUN cp /opt/openlava-2.2/etc/openlava.* /etc/profile.d
 
-ADD etc/lsf.* /opt/openlava-3.3/etc/
-ADD etc/lsb.* /opt/openlava-3.3/etc/
+ADD etc/lsf.* /opt/openlava-2.2/etc/
+ADD etc/lsb.* /opt/openlava-2.2/etc/
 
-RUN echo "source /opt/openlava-3.3/etc/openlava.sh" >> /root/.bashrc
+ADD bin/elim /opt/openlava-2.2/sbin/
+
+RUN echo "source /opt/openlava-2.2/etc/openlava.sh" >> /root/.bashrc
 RUN mkdir -p /home/openlava/
 RUN touch /home/openlava/.bashrc
-RUN echo "source /opt/openlava-3.3/etc/openlava.sh" >> /home/openlava/.bashrc
+RUN echo "source /opt/openlava-2.2/etc/openlava.sh" >> /home/openlava/.bashrc
 
 # Mesos DCOS service part
 ADD mesoslava/ /tmp/mesoslava/

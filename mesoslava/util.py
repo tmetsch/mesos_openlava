@@ -10,7 +10,7 @@ __author__ = 'tmetsch'
 # TODO: this file is one big pain in the a**. Should work with proper
 # python API calls instead of calling subprocess.
 
-OPENLAVA_PATH = '/opt/openlava-3.3'
+OPENLAVA_PATH = '/opt/openlava-2.2'
 
 
 def get_ip(hostname):
@@ -93,7 +93,9 @@ def get_clusters():
     """
     Return an array with info about the accessible clusters.
     """
-    tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/lsclusters'])
+    # XXX: openlava 2.2 does not have a lsclusters command
+    # tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/lsclusters'])
+    tmp_str = ''
     return _parse_output(tmp_str)
 
 
@@ -101,7 +103,7 @@ def get_hosts_load():
     """
     Return an array with load info about the current hosts in the cluster.
     """
-    tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/lsload'])
+    tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/lsload', '-l'])
     return _parse_output(tmp_str)
 
 
@@ -151,8 +153,9 @@ def add_host_to_cluster(hostname, max_jobs=0, resources=None, model=None):
     Add a host to the cluster.
     """
     cmd = [OPENLAVA_PATH + '/bin/lsaddhost']
-    if max_jobs > 0:
-        cmd.extend(['-M', str(max_jobs)])
+    # XXX: openlava 2.2 does not support -M flag.
+    # if max_jobs > 0:
+    #     cmd.extend(['-M', str(max_jobs)])
     if resources is not None:
         cmd.extend(['-R', resources])
     if model is not None:

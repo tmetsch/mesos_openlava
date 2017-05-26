@@ -12,8 +12,6 @@ TMPL = '''
 <html>
     <head>
         <title>OpenLava</title>
-        <link rel="stylesheet"
-            href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
         <style type="text/css">
             body {
                 padding: 8px;

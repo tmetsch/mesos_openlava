@@ -22,7 +22,8 @@ IntelI5      100        (x86_64)
 End HostModel
 
 Begin Resource
-RESOURCENAME  TYPE    INTERVAL INCREASING  DESCRIPTION 	      # Keywords
+RESOURCENAME  TYPE    INTERVAL INCREASING  DESCRIPTION  # Keywords
+   gpus       Boolean ()       ()          (Has GPU)
    fs         Boolean ()       ()          (File server)
    cs         Boolean ()       ()          (Compute server)
    exl_prio   Boolean ()       ()          (Tag as exclusive for prio queue)

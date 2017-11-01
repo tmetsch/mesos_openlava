@@ -2,18 +2,17 @@
 OpenLava executor for Apache Mesos. Fires up a LIM, PIM, SBATCHD, RES.
 """
 
-import sys
 import json
 import threading
 import time
 
 from mesos import interface
-from mesos import native
 from mesos.interface import mesos_pb2
 
-import util
-
 __author__ = 'tmetsch'
+
+TIMEOUT = 10
+COUNT = 12
 
 
 class OpenLavaExecutor(interface.Executor):
@@ -22,63 +21,86 @@ class OpenLavaExecutor(interface.Executor):
     """
     # TODO: could make use of docker itself - aka run jobs in docker.
 
+    def __init__(self, lava_controller):
+        super(OpenLavaExecutor, self).__init__()
+
+        self.lava_ctrl = lava_controller
+        self.task = None
+        self.task_data = None
+        self.driver = None
+
+    def _start_lava(self):
+        """
+        Start OpenLava on agent.
+        """
+        # start openlava services
+        master_hostname = self.task_data['master_hostname']
+        master_ip = self.task_data['master_ip']
+
+        # configure the master.
+        self.lava_ctrl.add_host(master_hostname, master_ip, False)
+        self.lava_ctrl.start_lava(False)
+
+    def _stop_lava(self):
+        """
+        Stop OpenLava on agent.
+        """
+        self.lava_ctrl.stop_lava()
+
+    def _create_update(self):
+        """
+        Create a task update.
+        """
+        agent_hostname = self.task_data['agent_hostname']
+        agent_ip = self.task_data['agent_ip']
+
+        update = mesos_pb2.TaskStatus()
+        update.task_id.value = self.task.task_id.value
+        update.data = json.dumps({'agent_hostname': agent_hostname,
+                                  'agent_ip': agent_ip})
+        return update
+
+    def run_task(self):
+        """
+        Run a Apache Mesos Task.
+        """
+        busy = True
+        count = 0
+        while busy:
+            time.sleep(TIMEOUT)
+            try:
+                if self.lava_ctrl.host_njobs(
+                        self.task_data['agent_hostname']) == 0:
+                    count += 1
+            except:
+                # lim not ready...
+                pass
+
+            if count >= COUNT:
+                # in case I'm idle for a while finish...
+                busy = False
+                update = self._create_update()
+                update.state = mesos_pb2.TASK_FINISHED
+                self.driver.sendStatusUpdate(update)
+                self._stop_lava()
+
     def launchTask(self, driver, task):
         """
         Fires up OpenLava services and once obsolete kill them again.
         """
-        # TODO: containerize openlava service itself...
+        # TODO: containerize Openlava service itself...
+        self.task = task
+        self.task_data = json.loads(self.task.data)
+        self.driver = driver
 
-        def run_task():
-            """
-            Run a Apache Mesos Task.
-            """
-            # start openlava services
-            tmp = json.loads(task.data)
-            master_hostname = tmp['master_hostname']
-            master_ip = tmp['master_ip']
-            agent_hostname = tmp['agent_hostname']
-            agent_ip = tmp['agent_ip']
+        # start lava
+        self._start_lava()
 
-            # configure the master.
-            util.add_to_hosts(master_hostname, master_ip)
-            util.add_to_cluster_conf(master_hostname)
+        # tell master we are ready to fire up.
+        update = self._create_update()
+        update.state = mesos_pb2.TASK_RUNNING
+        driver.sendStatusUpdate(update)
 
-            # tell master we are ready to fire up.
-            update = mesos_pb2.TaskStatus()
-            update.task_id.value = task.task_id.value
-            update.state = mesos_pb2.TASK_RUNNING
-            update.data = str(agent_hostname) + ':' + str(agent_ip)
-            driver.sendStatusUpdate(update)
-
-            util.start_lava()
-
-            # in case I'm idle for a while done.
-            busy = True
-            count = 0
-            while busy:
-                time.sleep(10)
-
-                try:
-                    if util.njobs_per_host(agent_hostname.strip()) == 0:
-                        count += 1
-                except:
-                    # lim not ready...
-                    pass
-
-                if count >= 12:
-                    busy = False
-                    # tell master we are done here.
-                    update = mesos_pb2.TaskStatus()
-                    update.task_id.value = task.task_id.value
-                    update.state = mesos_pb2.TASK_FINISHED
-                    update.data = str(agent_hostname) + ':' + str(agent_ip)
-                    driver.sendStatusUpdate(update)
-                    util.stop_lava()
-
-        thread = threading.Thread(target=run_task)
+        # start a thread.
+        thread = threading.Thread(target=self.run_task)
         thread.start()
-
-
-if __name__ == "__main__":
-    DRIVER = native.MesosExecutorDriver(OpenLavaExecutor())
-    sys.exit(0 if DRIVER.run() == mesos_pb2.DRIVER_STOPPED else 1)

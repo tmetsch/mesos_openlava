@@ -21,56 +21,100 @@ def get_ip(hostname):
     return hname
 
 
-def start_lava(is_master=False):
+class LavaControl(object):
     """
-    Fire up the openlava service.
+    Instances of this class can be used to control OpenLava instances.
     """
-    # TODO: very poor approach for now
-    hostname = subprocess.check_output('hostname').rstrip()
 
-    add_to_cluster_conf(hostname)
-    subprocess.check_output([OPENLAVA_PATH + '/sbin/lim'],
-                            env={'LSF_ENVDIR': OPENLAVA_PATH + '/etc'})
-    subprocess.check_output([OPENLAVA_PATH + '/sbin/res'],
-                            env={'LSF_ENVDIR': OPENLAVA_PATH + '/etc'})
-    subprocess.check_output([OPENLAVA_PATH + '/sbin/sbatchd'],
-                            env={'LSF_ENVDIR': OPENLAVA_PATH + '/etc'})
-    if is_master:
-        subprocess.check_output([OPENLAVA_PATH + '/bin/badmin', 'hclose',
-                                 hostname],
+    def __init__(self):
+        """
+        Initialize this object.
+        """
+        self.hostname = subprocess.check_output('hostname').rstrip()
+        self.my_ip = get_ip(self.hostname)
+
+    def start_lava(self, is_master):
+        """
+        Fire up the openlava services.
+        """
+        # TODO: very poor approach for now
+
+        add_to_cluster_conf(self.hostname)
+        subprocess.check_output([OPENLAVA_PATH + '/sbin/lim'],
                                 env={'LSF_ENVDIR': OPENLAVA_PATH + '/etc'})
-    return hostname
+        subprocess.check_output([OPENLAVA_PATH + '/sbin/res'],
+                                env={'LSF_ENVDIR': OPENLAVA_PATH + '/etc'})
+        subprocess.check_output([OPENLAVA_PATH + '/sbin/sbatchd'],
+                                env={'LSF_ENVDIR': OPENLAVA_PATH + '/etc'})
+        if is_master:
+            subprocess.check_output([OPENLAVA_PATH + '/bin/badmin', 'hclose',
+                                     self.hostname],
+                                    env={'LSF_ENVDIR': OPENLAVA_PATH + '/etc'})
 
+    def stop_lava(self):
+        """
+        Kill the openlava services.
+        """
+        subprocess.check_output(['pkill', 'lim'])
+        subprocess.check_output(['pkill', 'pim'])
+        subprocess.check_output(['pkill', 'res'])
+        subprocess.check_output(['pkill', 'sbatchd'])
+        subprocess.check_output(['pkill', '-SIGCHLD', 'mesos-slave'])
 
-def stop_lava():
-    """
-    Kill Openlava processes.
-    """
-    subprocess.check_output(['pkill', 'lim'])
-    subprocess.check_output(['pkill', 'pim'])
-    subprocess.check_output(['pkill', 'res'])
-    subprocess.check_output(['pkill', 'sbatchd'])
-    subprocess.check_output(['pkill', '-SIGCHLD', 'mesos-slave'])
+    def add_host(self, host, ip_addr, is_master,
+                 max_jobs=None, resource_tags=None):
+        """
+        Add a host to the cluster.
+        """
+        # configure name resolution
+        add_to_hosts(host, ip_addr)
 
+        # add to cluster configuration
+        add_to_cluster_conf(host)
 
-def get_queue_length(queue='normal'):
-    """
-    Get the length pending jobs in a queue.
-    """
-    tmp = subprocess.check_output([OPENLAVA_PATH + '/bin/bqueues',
-                                   queue]).split('\n')[1]
-    lst = [elem for elem in tmp.split(' ') if len(elem) is not 0]
-    return int(lst[8])
+        if is_master:
+            # finally add host.
+            add_host_to_cluster(host,
+                                max_jobs=max_jobs,
+                                resources=resource_tags)
 
+    def rm_host(self, host, is_master):
+        """
+        Remove a host form the cluster.
+        """
+        if is_master:
+            # remove from cluster
+            rm_host_from_cluster(host)
 
-def njobs_per_host(hostname):
-    """
-    Return number of jobs for a given host.
-    """
-    tmp = subprocess.check_output([OPENLAVA_PATH + '/bin/bhosts',
-                                   hostname]).split('\n')[1]
-    lst = [elem for elem in tmp.split(' ') if len(elem) is not 0]
-    return int(lst[4])
+        # remove the config
+        rm_from_cluster_conf(host)
+
+        # remove from name resolution.
+        rm_from_hosts(host)
+
+    def get_hosts(self):
+        """
+        Return hosts information.
+        """
+        return get_hosts()
+
+    def get_queue_length(self, queue):
+        """
+        Get the length pending jobs in a queue.
+        """
+        tmp = subprocess.check_output([OPENLAVA_PATH + '/bin/bqueues',
+                                       queue]).split('\n')[1]
+        lst = [elem for elem in tmp.split(' ') if len(elem) is not 0]
+        return int(lst[8])
+
+    def host_njobs(self, hostname):
+        """
+        Return number of jobs for a given host.
+        """
+        tmp = subprocess.check_output([OPENLAVA_PATH + '/bin/bhosts',
+                                       hostname]).split('\n')[1]
+        lst = [elem for elem in tmp.split(' ') if len(elem) is not 0]
+        return int(lst[4])
 
 
 def get_bhosts():
@@ -86,16 +130,6 @@ def get_bqueues():
     Return an array with info about the current queues.
     """
     tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/bqueues'])
-    return _parse_output(tmp_str)
-
-
-def get_clusters():
-    """
-    Return an array with info about the accessible clusters.
-    """
-    # XXX: openlava 2.2 does not have a lsclusters command
-    # tmp_str = subprocess.check_output([OPENLAVA_PATH + '/bin/lsclusters'])
-    tmp_str = ''
     return _parse_output(tmp_str)
 
 
@@ -153,9 +187,8 @@ def add_host_to_cluster(hostname, max_jobs=0, resources=None, model=None):
     Add a host to the cluster.
     """
     cmd = [OPENLAVA_PATH + '/bin/lsaddhost']
-    # XXX: openlava 2.2 does not support -M flag.
-    # if max_jobs > 0:
-    #     cmd.extend(['-M', str(max_jobs)])
+    if max_jobs > 0:
+        cmd.extend(['-M', str(max_jobs)])
     if resources is not None:
         cmd.extend(['-R', resources])
     if model is not None:

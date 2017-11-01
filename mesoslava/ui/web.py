@@ -1,3 +1,6 @@
+"""
+Simple OpenLava dashboard.
+"""
 
 import socket
 import threading
@@ -5,16 +8,19 @@ import threading
 from wsgiref.util import setup_testing_defaults
 from wsgiref.simple_server import make_server
 
-import util
+from mesoslava import lava_control
 
 TMPL = '''
 <!DOCTYPE html>
 <html>
     <head>
         <title>OpenLava</title>
+        <link rel="stylesheet" 
+            href="https://unpkg.com/purecss@1.0.0/build/pure-min.css" 
+            crossorigin="anonymous">
         <style type="text/css">
             body {
-                padding: 8px;
+                padding: 0.5em;
             }
             table {
             }
@@ -37,10 +43,6 @@ TMPL = '''
         <h2>Host information</h2>
         %s
         <h1>OpenLava base information</h1>
-        <!-- 
-        XXX: openlava 2.2 does not support this.
-        <h2>Cluster information</h2>
-        -->
         <h2>Load information</h2>
         %s
         <h2>Host information</h2>
@@ -55,6 +57,9 @@ def get_hostname():
 
 
 def create_table(data):
+    """
+    Create a html tables.
+    """
     tmp = '<table class="pure-table"><thead><tr>'
     for item in data[0]:
         tmp += '<th>' + item + '</th>'
@@ -71,6 +76,9 @@ def create_table(data):
 
 
 def simple_app(environ, start_response):
+    """
+    Simple WSGI app.
+    """
     setup_testing_defaults(environ)
 
     status = '200 OK'
@@ -78,15 +86,22 @@ def simple_app(environ, start_response):
 
     start_response(status, headers)
 
-    return TMPL % (create_table(util.get_bqueues()),
-                   create_table(util.get_bhosts()),
-                   # XXX: openlava 2.2. does not support this command.
-                   # create_table(util.get_clusters()),
-                   create_table(util.get_hosts_load()),
-                   create_table(util.get_hosts()))
+    return TMPL % (create_table(lava_control.get_bqueues()),
+                   create_table(lava_control.get_bhosts()),
+                   create_table(lava_control.get_hosts_load()),
+                   create_table(lava_control.get_hosts()))
 
 
-def serve():
-    httpd = make_server('', 9876, simple_app)
-    t = threading.Thread(target=httpd.serve_forever)
-    t.start()
+class Dashboard(threading.Thread):
+    """
+    Dashboard Thread.
+    """
+
+    def __init__(self):
+        super(Dashboard, self).__init__()
+        self.done = False
+
+    def run(self):
+        httpd = make_server('', 9876, simple_app)
+        while not self.done:
+            httpd.handle_request()

@@ -6,7 +6,7 @@ to run this stuff:
 
     $ docker-compose -p tmetsch up
 
-This will start a mesos-master, 1 mesos-slave and the
+This will start a mesos-master, mesos-slaved and the
 [OpenLava](http://openlava.org) master framework. It is a "simulated"
 distributed environment for testing only atm. The idea for integrating
 openlava on Mesos is the following:
@@ -28,11 +28,7 @@ There are several docker images being used here:
 OpenLava framework (this could be split into two to be more
 lightweight)
 
-## testing
-
-You can scale the Mesos cluster by running:
-
-    $ docker-compose -p tmetsch scale node=10    
+## Testing
 
 To submit jobs:
 
@@ -49,3 +45,7 @@ To watch the current hosts (Mesos Tasks) in the OpenLava cluster:
 In the meantime feel free to see the openlava cluster shrink and grow based on 
 demand :-)
 
+## Important note
+
+OpenLava 2.2 currently requires [this](https://github.com/openlava/2.2/pull/2) 
+patch to assure only the offered CPUs are being used.

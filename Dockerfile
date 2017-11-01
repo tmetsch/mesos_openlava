@@ -8,17 +8,15 @@ RUN update-ca-certificates -f && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # install openlava
 WORKDIR /tmp
-# RUN wget http://www.openlava.org/tarball/openlava-2.2.tar.gz
-# ADD openlava-3.3.tar.gz /tmp/
-# RUN tar -xzvf openlava-2.2.tar.gz
+RUN wget http://www.openlava.org/tarball/openlava-2.2.tar.gz
+RUN tar -xzvf openlava-2.2.tar.gz
 
 RUN apt-get update
 RUN apt-get install -y automake
 
-ADD openlava-2.2 /tmp/openlava-2.2
-WORKDIR openlava-2.2/
-
-RUN ./bootstrap.sh
+WORKDIR openlava-2.2
+# ADD openlava-2.2 /tmp/openlava-2.2
+# RUN ./bootstrap.sh
 
 RUN ./configure
 RUN make

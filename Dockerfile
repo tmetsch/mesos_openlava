@@ -1,23 +1,19 @@
 FROM tmetsch/mesos_docker
 
 # dependencies
-RUN apt-get update --fix-missing
-RUN apt-get install --no-install-recommends -y build-essential wget autoconf libncurses5-dev itcl3-dev tcl-dev python2.7
+RUN apt-get update
+RUN apt-get install --no-install-recommends -y build-essential wget autoconf libncurses5-dev itcl3-dev tcl-dev python2.7 automake
 
 RUN update-ca-certificates -f && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # install openlava
 WORKDIR /tmp
-RUN wget http://www.openlava.org/tarball/openlava-2.2.tar.gz
-RUN tar -xzvf openlava-2.2.tar.gz
-
-RUN apt-get update
-RUN apt-get install -y automake
-
+# RUN wget http://www.openlava.org/tarball/openlava-2.2.tar.gz
+# RUN tar -xzvf openlava-2.2.tar.gz
+ADD openlava-2.2 /tmp/openlava-2.2
 WORKDIR openlava-2.2
-# ADD openlava-2.2 /tmp/openlava-2.2
-# RUN ./bootstrap.sh
 
+RUN ./bootstrap.sh
 RUN ./configure
 RUN make
 RUN make install

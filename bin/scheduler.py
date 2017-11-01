@@ -48,13 +48,12 @@ def main():
 
     # TODO: authentication
     # TODO: revocable
-    # TODO: pick up mesos master URI from env var.
     dcos_service.principal = 'openlava-service'
     lava_ctrl = lava_control.LavaControl()
     scheduler = framework.OpenLavaScheduler(executor, lava_ctrl)
     driver = native.MesosSchedulerDriver(scheduler,
                                          dcos_service,
-                                         'master:5050')
+                                         os.environ['MESOS_MASTER'])
     return driver
 
 

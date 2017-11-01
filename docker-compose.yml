@@ -101,6 +101,8 @@ services:
      - 9876:9876
     links:
      - master:master
+    environment:
+     - MESOS_MASTER=master:5050
     working_dir: /tmp/
     command: /tmp/scheduler.py
     deploy:

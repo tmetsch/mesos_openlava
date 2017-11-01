@@ -1,7 +1,13 @@
 #!/usr/bin/env python2.7
+"""
+Kick-off OpenLava DCOS service.
+"""
 
 import logging
 import os
+import sys
+
+sys.path.append('/tmp/mesoslava')
 
 from mesos import native
 from mesos.interface import mesos_pb2
@@ -13,44 +19,48 @@ from mesoslava import ui
 LOG = logging.getLogger(__name__)
 
 
-if __name__ == '__main__':
-    import sys
-    sys.path.append('/tmp/mesoslava')
-
+def main():
+    """
+    Main routine.
+    """
     LOG.setLevel(level='DEBUG')
 
-    EXECUTOR = mesos_pb2.ExecutorInfo()
-    EXECUTOR.executor_id.value = "default"
-    EXECUTOR.command.value = os.path.abspath("/tmp/executor.py")
-    EXECUTOR.name = "OpenLava executor"
-    EXECUTOR.source = "openlava_test"
+    executor = mesos_pb2.ExecutorInfo()
+    executor.executor_id.value = "default"
+    executor.command.value = os.path.abspath("/tmp/executor.py")
+    executor.name = "OpenLava executor"
+    executor.source = "openlava_test"
 
-    FRAMEWORK = mesos_pb2.FrameworkInfo()
-    FRAMEWORK.user = ''
-    FRAMEWORK.name = 'OpenLava'
-    FRAMEWORK.roles.append('hpc')
-    role1 = FRAMEWORK.capabilities.add()
-    role1.type = FRAMEWORK.Capability.MULTI_ROLE
-    role2 = FRAMEWORK.capabilities.add()
-    role2.type = FRAMEWORK.Capability.GPU_RESOURCES
-    FRAMEWORK.webui_url = 'http://%s:9876' % ui.web.get_hostname()
+    dcos_service = mesos_pb2.FrameworkInfo()
+    dcos_service.user = ''
+    dcos_service.name = 'OpenLava'
+    dcos_service.roles.append('hpc')
+    role1 = dcos_service.capabilities.add()
+    role1.type = dcos_service.Capability.MULTI_ROLE
+    role2 = dcos_service.capabilities.add()
+    role2.type = dcos_service.Capability.GPU_RESOURCES
+    dcos_service.webui_url = 'http://%s:9876' % ui.web.get_hostname()
 
     # Setup the loggers
-    LOGGERS = (__name__, 'mesos')
-    for log in LOGGERS:
+    log = (__name__, 'mesos')
+    for log in log:
         logging.getLogger(log).setLevel(logging.DEBUG)
 
     # TODO: authentication
     # TODO: revocable
     # TODO: pick up mesos master URI from env var.
-    FRAMEWORK.principal = 'openlava-framework'
-    LAVA_CTRL = lava_control.LavaControl()
-    DRIVER = native.MesosSchedulerDriver(framework.OpenLavaScheduler(EXECUTOR,
-                                                                     LAVA_CTRL),
-                                         FRAMEWORK,
+    dcos_service.principal = 'openlava-service'
+    lava_ctrl = lava_control.LavaControl()
+    scheduler = framework.OpenLavaScheduler(executor, lava_ctrl)
+    driver = native.MesosSchedulerDriver(scheduler,
+                                         dcos_service,
                                          'master:5050')
-    STATUS = 0 if DRIVER.run() == mesos_pb2.DRIVER_STOPPED else 1
+    return driver
 
+
+if __name__ == '__main__':
+    DRIVER = main()
+    STATUS = 0 if DRIVER.run() == mesos_pb2.DRIVER_STOPPED else 1
     DRIVER.stop()
 
     sys.exit(STATUS)

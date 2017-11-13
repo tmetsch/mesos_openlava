@@ -13,7 +13,7 @@ from mesos import native
 from mesos.interface import mesos_pb2
 
 from mesoslava import framework
-from mesoslava import lava_control
+from mesoslava import lava_shim
 from mesoslava import ui
 
 LOG = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ def main():
     # TODO: authentication
     # TODO: revocable
     dcos_service.principal = 'openlava-service'
-    lava_ctrl = lava_control.LavaControl()
+    lava_ctrl = lava_shim.LavaControl()
     scheduler = framework.OpenLavaScheduler(executor, lava_ctrl)
     driver = native.MesosSchedulerDriver(scheduler,
                                          dcos_service,

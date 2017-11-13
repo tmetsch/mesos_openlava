@@ -42,6 +42,9 @@ class OpenLavaSchedulerTest(unittest.TestCase):
         self.cut = framework.OpenLavaScheduler(executor,
                                                dummies.DummyLava(),
                                                start_ui=False)
+        # stop the controller & manually set goal
+        self.cut.controller.done = True
+        self.cut.goal = 1
 
     def test_resource_offers_for_success(self):
         """
@@ -93,6 +96,7 @@ class OpenLavaSchedulerTest(unittest.TestCase):
 
         # ensure driver got called with accept.
         self.assertTrue(self.driver.accept_called == 1)
+        print self.driver.decline_called
         self.assertTrue(self.driver.decline_called == 0)
 
     def test_status_update_for_sanity(self):

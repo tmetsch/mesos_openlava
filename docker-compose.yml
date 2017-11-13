@@ -65,6 +65,7 @@ services:
     command: /usr/local/sbin/mesos-slave
     privileged: true
     deploy:
+      replicas: 5
       resources:
         limits:
           cpus: "0.5"

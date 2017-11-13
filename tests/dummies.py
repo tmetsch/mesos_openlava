@@ -87,6 +87,12 @@ class DummyLava(object):
         """
         return self.queue_length
 
+    def get_job_info(self):
+        """
+        Return job info.
+        """
+        return self.queue_length, 1
+
     def get_hosts(self):
         """
         Return current available hosts.
@@ -98,3 +104,21 @@ class DummyLava(object):
         Return jos per host.
         """
         return 0
+
+
+class DummyScheduler(object):
+    """
+    Dummy Scheduler.
+    """
+
+    def __init__(self):
+        """
+        Init.
+        """
+        self.goal = 0.0
+
+    def get_current(self):
+        """
+        Return some dummy info.
+        """
+        return 0.01, 100

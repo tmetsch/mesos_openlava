@@ -12,7 +12,7 @@ from mesos.interface import mesos_pb2
 __author__ = 'tmetsch'
 
 TIMEOUT = 10
-COUNT = 12
+COUNT = 6
 
 
 class OpenLavaExecutor(interface.Executor):

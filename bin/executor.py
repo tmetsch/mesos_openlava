@@ -12,14 +12,14 @@ from mesos import native
 from mesos.interface import mesos_pb2
 
 from mesoslava import executor
-from mesoslava import lava_control
+from mesoslava import lava_shim
 
 
 def main():
     """
     Main routine.
     """
-    lava_ctrl = lava_control.LavaControl()
+    lava_ctrl = lava_shim.LavaControl()
     driver = native.MesosExecutorDriver(executor.OpenLavaExecutor(lava_ctrl))
 
     return driver

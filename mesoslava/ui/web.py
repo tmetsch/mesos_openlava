@@ -8,7 +8,9 @@ import threading
 from wsgiref.util import setup_testing_defaults
 from wsgiref.simple_server import make_server
 
-from mesoslava import lava_control
+from mesoslava import lava_shim
+
+# TODO: visualize tasks vs pending jobs.
 
 TMPL = '''
 <!DOCTYPE html>
@@ -86,10 +88,10 @@ def simple_app(environ, start_response):
 
     start_response(status, headers)
 
-    return TMPL % (create_table(lava_control.get_bqueues()),
-                   create_table(lava_control.get_bhosts()),
-                   create_table(lava_control.get_hosts_load()),
-                   create_table(lava_control.get_hosts()))
+    return TMPL % (create_table(lava_shim.get_bqueues()),
+                   create_table(lava_shim.get_bhosts()),
+                   create_table(lava_shim.get_hosts_load()),
+                   create_table(lava_shim.get_hosts()))
 
 
 class Dashboard(threading.Thread):

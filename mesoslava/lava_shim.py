@@ -107,6 +107,17 @@ class LavaControl(object):
         lst = [elem for elem in tmp.split(' ') if len(elem) is not 0]
         return int(lst[8])
 
+    def get_job_info(self):
+        """
+        Get the current number of running and pending jobs.
+        """
+        pending = 0
+        running = 0
+        for queue in get_bqueues()[1:]:
+            pending += int(queue[8])
+            running += int(queue[9])
+        return pending, running
+
     def host_njobs(self, hostname):
         """
         Return number of jobs for a given host.
@@ -233,11 +244,11 @@ def rm_from_hosts(hostname, filename='/etc/hosts'):
 
 def _parse_output(tmp_str):
     """
-    Parses the output from lava commans into lists.
+    Parses the output from lava commands into lists.
     """
     tmp = []
     for line in tmp_str.split('\n'):
-        if len(line) == 0:
+        if not line:
             continue
         tmp.append([item for item in line.split(' ') if len(item.strip()) > 0])
     return tmp

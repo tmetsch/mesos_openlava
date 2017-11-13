@@ -9,6 +9,7 @@ import uuid
 from mesos import interface
 from mesos.interface import mesos_pb2
 
+from mesoslava import control
 from mesoslava.ui import web
 
 __author__ = 'tmetsch'
@@ -36,9 +37,28 @@ class OpenLavaScheduler(interface.Scheduler):
         self.master_ip = self.lava_ctrl.my_ip
         self.lava_ctrl.start_lava(True)
 
+        # PID controller
+        self.goal = 0
+        self.controller = control.Controller(self)
+        self.controller.start()
+
         # Fire up UI thread.
         if start_ui:
             web.Dashboard().start()
+
+    def get_current(self):
+        """
+        Get current load indicator.
+        """
+        pending, running = self.lava_ctrl.get_job_info()
+        if pending + running > 0.0:
+            # Ratio of jobs running vs pending.
+            ratio = (running * 1.) / \
+                    (running + pending)
+        else:
+            # no jobs - gradually bring down value to 0.0.
+            ratio = len(self.accepted_tasks) / 10.
+        return ratio, pending
 
     def resourceOffers(self, driver, offers):
         """
@@ -47,28 +67,19 @@ class OpenLavaScheduler(interface.Scheduler):
         """
         # TODO: add revive and suppressOffers to not constantly decline.
         # TODO: let's become smarter and grab only what we need in \
-        #       future. - match pending jobs in queues to offers from mesos.
-        # TODO: look into feedback control for this.
-        # TODO: candidate: https://github.com/Netflix/Fenzo
+        #       future. - match pending jobs in queues to offers from mesos
+        #       (e.g. GPUs).
         for offer in offers:
-            # not going to run openlava twice on same hosts.
-            if str(offer.hostname) in self.accepted_tasks:
-                # TODO: could tune number of job slots available on that host.
-                # TODO: work with filters
+            if len(self.accepted_tasks) < self.goal:
+                res_tag = None
+                # ensure exclusive prio queue first.
+                if self.lava_ctrl.get_queue_length('priority') >= 1:
+                    res_tag = 'exl_prio'
+                operation = self._process_offer(offer, res_tag)
+                driver.acceptOffers([offer.id], [operation])
+            else:
+                # otherwise let's decline.
                 driver.declineOffer(offer.id)
-
-            # if prio queue > 10 exclusively assign offers to prio queue.
-            if self.lava_ctrl.get_queue_length('priority') > 10:
-                operation = self._process_offer(offer, 'exl_prio')
-                driver.acceptOffers([offer.id], [operation])
-                continue
-            if self.lava_ctrl.get_queue_length('normal') > 10:
-                operation = self._process_offer(offer, None)
-                driver.acceptOffers([offer.id], [operation])
-                continue
-
-            # otherwise let's decline.
-            driver.declineOffer(offer.id)
 
     def _process_offer(self, offer, resource_tag):
         """
@@ -115,7 +126,6 @@ class OpenLavaScheduler(interface.Scheduler):
                                 'agent_hostname': str(agent_hostname),
                                 'agent_ip': str(agent_ip)})
 
-        # TODO: let's not always grab GPUs if not needed.
         for name in res_offers:
             tmp_res = task.resources.add()
             tmp_res.name = name
@@ -168,5 +178,7 @@ class OpenLavaScheduler(interface.Scheduler):
               format(self.lava_ctrl.get_queue_length('priority')))
         print('Current number of hosts: {0}'.
               format(str(len(self.lava_ctrl.get_hosts()) - 2)))
+        print('Current goal for # of tasks: {0}'.
+              format(self.goal))
 
         sys.stdout.flush()

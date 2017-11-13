@@ -28,8 +28,10 @@ class OpenLavaScheduler(interface.Scheduler):
 
         # Mesos related stuff
         self.executor = executor
+        self.driver = None
         self.accepted_tasks = {}
         self.running_tasks = {}
+        self.suppress = False
 
         # OpenLava related stuff
         self.lava_ctrl = lava_controller
@@ -48,16 +50,22 @@ class OpenLavaScheduler(interface.Scheduler):
 
     def get_current(self):
         """
-        Get current load indicator.
+        Get current load indicator - called by the controller thread.
         """
         pending, running = self.lava_ctrl.get_job_info()
         if pending + running > 0.0:
             # Ratio of jobs running vs pending.
             ratio = (running * 1.) / \
                     (running + pending)
+            if self.suppress:
+                self.driver.reviveOffers()
+                self.suppress = False
         else:
             # no jobs - gradually bring down value to 0.0.
             ratio = len(self.accepted_tasks) / 10.
+            if not self.suppress:
+                self.driver.suppressOffers()
+                self.suppress = True
         return ratio, pending
 
     def resourceOffers(self, driver, offers):
@@ -65,7 +73,6 @@ class OpenLavaScheduler(interface.Scheduler):
         Apache Mesos invokes this to inform us about offers. We can accept
         or decline...
         """
-        # TODO: add revive and suppressOffers to not constantly decline.
         # TODO: let's become smarter and grab only what we need in \
         #       future. - match pending jobs in queues to offers from mesos
         #       (e.g. GPUs).
@@ -182,3 +189,9 @@ class OpenLavaScheduler(interface.Scheduler):
               format(self.goal))
 
         sys.stdout.flush()
+
+    def registered(self, driver, framework_id, master_info):
+        """
+        Called when the framework is registered.
+        """
+        self.driver = driver

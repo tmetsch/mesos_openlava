@@ -21,11 +21,11 @@ class UtilsTest(unittest.TestCase):
         """
         lava_shim.add_to_cluster_conf('foo',
                                       os.sep.join(['tests', 'files',
-                                                      'lsf.cluster.openlava']))
+                                                   'lsf.cluster.openlava']))
         lava_shim.rm_from_cluster_conf('foo',
                                        os.sep.join(
-                                              ['tests', 'files',
-                                               'lsf.cluster.openlava']))
+                                           ['tests', 'files',
+                                            'lsf.cluster.openlava']))
 
     def test_add_hosts_for_sanity(self):
         """
@@ -33,7 +33,7 @@ class UtilsTest(unittest.TestCase):
         """
         lava_shim.add_to_hosts('foo', '192.168.0.1',
                                filename=os.sep.join(['tests', 'files',
-                                                        'hosts']))
+                                                     'hosts']))
         lava_shim.rm_from_hosts('foo',
                                 filename=os.sep.join(['tests', 'files',
-                                                         'hosts']))
+                                                      'hosts']))

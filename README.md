@@ -50,5 +50,5 @@ demand :-)
 
 ## Important note
 
-OpenLava 2.2 currently requires [this](https://github.com/openlava/2.2/pull/2) 
+OpenLava 2.2 currently requires [this](https://github.com/tmetsch/openlava-2.2/commit/345579506938906a6b9db409004d9e99f4546bf0) 
 patch to assure only the offered CPUs are being used.
